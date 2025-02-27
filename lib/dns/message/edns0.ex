@@ -624,7 +624,7 @@ defmodule DNS.Message.EDNS0 do
     end
 
     def to_print({8, {ip, c, s}}) do
-      "; ECS: #{Utils.a2s(ip)}/#{c}/#{s}"
+      "; ECS: #{:inet.ntoa(ip)}/#{c}/#{s}"
     end
 
     def to_print({10, {c, s}}) do
