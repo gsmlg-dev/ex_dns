@@ -40,10 +40,6 @@ defmodule DNS.Message do
   alias DNS.Message.Header
   alias DNS.Message.Question
   alias DNS.Message.Record
-  alias DNS.ResourceRecord.Type, as: RType
-  alias DNS.Message.EDNS0
-
-  # import DNS.Message.NameUtils
 
   @type t :: %__MODULE__{
           header: %Header{},
@@ -63,44 +59,6 @@ defmodule DNS.Message do
             nslist: [],
             arlist: []
 
-  def to_buffer(
-        _message = %__MODULE__{
-          header: header,
-          qdlist: qdlist,
-          anlist: anlist,
-          nslist: nslist,
-          arlist: arlist
-        }
-      ) do
-    <<
-      Header.to_buffer(header)::binary,
-      Question.list_to_buffer(qdlist)::binary,
-      Record.list_to_buffer(anlist)::binary,
-      Record.list_to_buffer(nslist)::binary,
-      Record.list_to_buffer(arlist)::binary
-    >>
-  end
-
-  def from_buffer(<<header_bytes::binary-size(12), _::binary>> = message) do
-    header = Header.from_buffer(header_bytes)
-    {qd_size, qdlist} = Question.list_from_message(message, header.qdcount)
-    {an_size, anlist} = Record.list_from_message(header.ancount, message, 12 + qd_size)
-
-    {ns_size, nslist} =
-      Record.list_from_message(header.nscount, message, 12 + qd_size + an_size)
-
-    {_, arlist} =
-      Record.list_from_message(header.arcount, message, 12 + qd_size + an_size + ns_size)
-
-    %__MODULE__{
-      header: header,
-      qdlist: qdlist,
-      anlist: anlist,
-      nslist: nslist,
-      arlist: arlist
-    }
-  end
-
   def new do
     %__MODULE__{
       header: Header.new(),
@@ -111,123 +69,56 @@ defmodule DNS.Message do
     }
   end
 
-  def update_header_attr(message = %__MODULE__{}, name, value) do
-    %__MODULE__{message | header: Map.put(message.header, name, value)}
-  end
+  def from_binary(<<header_bytes::binary-size(12), _::binary>> = message) do
+    header = Header.from_binary(header_bytes)
+    {qd_size, qdlist} = Question.list_from_message(message, header.qdcount)
+    {anlist, offset} = Record.list_from_message(header.ancount, message, 12 + qd_size)
 
-  def update_header(message = %__MODULE__{}, header = %Header{}) do
-    %__MODULE__{message | header: Map.merge(message.header, header)}
-  end
+    {nslist, offset} =
+      Record.list_from_message(header.nscount, message, offset)
 
-  def add_question(message = %__MODULE__{}, question = %Question{}) do
+    {arlist, _} =
+      Record.list_from_message(header.arcount, message, offset)
+
     %__MODULE__{
-      message
-      | qdlist: message.qdlist ++ [question],
-        header: Map.put(message.header, :qdcount, message.header.qdcount + 1)
+      header: header,
+      qdlist: qdlist,
+      anlist: anlist,
+      nslist: nslist,
+      arlist: arlist
     }
   end
 
-  def add_answer(message = %__MODULE__{}, record = %Record{}) do
-    %__MODULE__{message | anlist: message.anlist ++ [record]}
-  end
+  defimpl String.Chars, for: DNS.Message do
+    def to_string(message) do
+      anlist_str =
+        if length(message.anlist) > 0 do
+          "\n;; ANSWER SECTION\n#{message.anlist |> Enum.join("\n")}"
+        else
+          ""
+        end
 
-  def add_authority(message = %__MODULE__{}, record = %Record{}) do
-    %__MODULE__{message | nslist: message.nslist ++ [record]}
-  end
+      nslist_str =
+        if length(message.nslist) > 0 do
+          "\n;; AUTHORITY SECTION\n#{message.nslist |> Enum.join("\n")}"
+        else
+          ""
+        end
 
-  def add_additional(message = %__MODULE__{}, record = %Record{}) do
-    %__MODULE__{message | arlist: message.arlist ++ [record]}
-  end
+      arlist_str =
+        if length(message.arlist) > 0 do
+          "\n;; ADDITIONAL SECTION\n#{message.arlist |> Enum.join("\n")}"
+        else
+          ""
+        end
 
-  def edns0?(message = %__MODULE__{}) do
-    with true <- length(message.arlist) > 0,
-         true <-
-           Enum.find_index(message.arlist, fn n -> n.type == RType.opt() end) |> is_integer() do
-      true
-    else
-      _ -> false
+      """
+      ;; HEADER SECTION
+      #{message.header}
+      ;; QUESTION SECTION
+      #{message.qdlist |> Enum.join("\n")}
+      #{anlist_str}#{nslist_str}#{arlist_str}
+      """
     end
-  end
-
-  @spec edns0(DNS.Message.t()) :: nil | DNS.Message.EDNS0.t()
-  def edns0(message = %__MODULE__{}) do
-    case Enum.find(message.arlist, nil, fn n -> n.type == RType.opt() end) do
-      nil ->
-        nil
-
-      record ->
-        record
-        |> Record.to_buffer()
-        |> EDNS0.from_buffer()
-    end
-  end
-
-  @spec edns0_or_new(DNS.Message.t()) :: DNS.Message.EDNS0.t()
-  def edns0_or_new(message = %__MODULE__{}) do
-    case Enum.find(message.arlist, nil, fn n -> n.type == RType.opt() end) do
-      nil ->
-        EDNS0.new()
-
-      record ->
-        record
-        |> Record.to_buffer()
-        |> EDNS0.from_buffer()
-    end
-  end
-
-  def set_edns0(message = %__MODULE__{}, edns0 = %EDNS0{}) do
-    arlist =
-      message.arlist
-      |> Enum.filter(fn r -> r.type != RType.opt() end)
-
-    r = edns0 |> EDNS0.to_buffer() |> Record.from_buffer() |> elem(1)
-
-    %__MODULE__{message | arlist: [r | arlist]}
-  end
-
-  def set_edns0(message = %__MODULE__{}, _) do
-    message
-  end
-
-  def to_print(message = %__MODULE__{}) do
-    anlist_str =
-      if length(message.anlist) > 0 do
-        "\n;; ANSWER SECTION\n#{message.anlist |> Enum.map(&Record.to_print(&1)) |> Enum.join("\n")}"
-      else
-        ""
-      end
-
-    nslist_str =
-      if length(message.nslist) > 0 do
-        "\n;; AUTHORITY SECTION\n#{message.nslist |> Enum.map(&Record.to_print(&1)) |> Enum.join("\n")}"
-      else
-        ""
-      end
-
-    arlist =
-      message.arlist
-      |> Enum.filter(fn
-        %Record{type: 41} ->
-          false
-
-        %Record{} ->
-          true
-      end)
-
-    arlist_str =
-      if length(arlist) > 0 do
-        "\n;; ADDITIONAL SECTION\n#{arlist |> Enum.map(&Record.to_print(&1)) |> Enum.join("\n")}"
-      else
-        ""
-      end
-
-    """
-    ;; HEADER SECTION
-    #{message.header |> Header.to_print()}
-    #{if(edns0?(message), do: ";; OPT PSEUDOSECTION\n#{message |> edns0() |> EDNS0.to_print()}")}
-    ;; QUESTION SECTION
-    #{message.qdlist |> Enum.map(&Question.to_print(&1)) |> Enum.join("\n")}
-    #{anlist_str}#{nslist_str}#{arlist_str}
-    """
   end
 end

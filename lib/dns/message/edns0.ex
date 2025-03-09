@@ -148,7 +148,7 @@ defmodule DNS.Message.EDNS0 do
             flags: 0,
             options: []
 
-  def from_buffer(
+  def from_binary(
         <<0::8, 41::16, udp_payload::16, extended_rcode::8, version::8, do_bit::1, flags::15,
           rdlenght::16, rdata::binary>>
       ) do
@@ -165,7 +165,7 @@ defmodule DNS.Message.EDNS0 do
   @doc """
   Converts a Record struct to binary data.
   """
-  def to_buffer(edns0 = %__MODULE__{}) do
+  def to_binary(edns0 = %__MODULE__{}) do
     <<0::8, 41::16, edns0.udp_payload::16, edns0.extended_rcode::8, edns0.version::8,
       edns0.do_bit::1, edns0.flags::15, encode_options(edns0.options)::binary>>
   end

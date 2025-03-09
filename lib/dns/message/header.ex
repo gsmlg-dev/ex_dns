@@ -137,7 +137,7 @@ defmodule DNS.Message.Header do
           # QR: 1bit  query (0), or a response (1)
           qr: 0 | 1,
           # OPCode: 4bit DNS.OpCode.t(),
-          opcode: integer(),
+          opcode: OpCode.t(),
           # AA: 1bit Authoritative Answer
           aa: 0 | 1,
           # TC: 1bit TrunCation
@@ -153,7 +153,7 @@ defmodule DNS.Message.Header do
           # CD: 1bit Checking Disabled
           cd: 0 | 1,
           # RCode: 4bit DNS.RCode.t(),
-          rcode: integer(),
+          rcode: RCode.t(),
           # QDCOUNT: 16bit an unsigned integer specifying the number of entries in the question section.
           qdcount: integer(),
           # ANCOUNT: 16bit an unsigned integer specifying the number of resource records in the answer section.
@@ -166,7 +166,7 @@ defmodule DNS.Message.Header do
 
   defstruct id: nil,
             qr: nil,
-            opcode: nil,
+            opcode: OpCode.new(0),
             aa: nil,
             tc: nil,
             rd: nil,
@@ -182,46 +182,12 @@ defmodule DNS.Message.Header do
 
   def generate_id, do: Enum.random(0..0xFFFF)
 
-  @spec to_buffer(DNS.Message.Header.t()) :: <<_::96>>
-  @doc """
-  # build a DNS header
-  """
-  def to_buffer(header = %Header{}) do
-    <<header.id::16, header.qr::1, header.opcode::4, header.aa::1, header.tc::1, header.rd::1,
-      header.ra::1, header.z::1, header.ad::1, header.cd::1, header.rcode::4, header.qdcount::16,
-      header.ancount::16, header.nscount::16, header.arcount::16>>
-  end
-
-  @spec from_buffer(<<_::96>>) :: DNS.Message.Header.t()
-  def from_buffer(
-        <<id::16, qr::1, opcode::4, aa::1, tc::1, rd::1, ra::1, z::1, ad::1, cd::1, rcode::4,
-          qdcount::16, ancount::16, nscount::16, arcount::16>> = _buffer
-      ) do
-    %Header{
-      id: id,
-      qr: qr,
-      opcode: opcode,
-      aa: aa,
-      tc: tc,
-      rd: rd,
-      ra: ra,
-      z: z,
-      ad: ad,
-      cd: cd,
-      rcode: rcode,
-      qdcount: qdcount,
-      ancount: ancount,
-      nscount: nscount,
-      arcount: arcount
-    }
-  end
-
   @spec new() :: DNS.Message.Header.t()
-  def new do
+  def new() do
     %Header{
       id: generate_id(),
       qr: 0,
-      opcode: OpCode.query(),
+      opcode: OpCode.new(0),
       aa: 0,
       tc: 0,
       rd: 1,
@@ -229,7 +195,7 @@ defmodule DNS.Message.Header do
       z: 0,
       ad: 0,
       cd: 0,
-      rcode: RCode.no_error(),
+      rcode: RCode.new(0),
       qdcount: 0,
       ancount: 0,
       nscount: 0,
@@ -237,22 +203,60 @@ defmodule DNS.Message.Header do
     }
   end
 
-  @spec qdcount(<<_::48, _::_*8>>) :: integer()
-  def qdcount(<<_::32, count::16, _::binary>> = _message), do: count
+  @doc false
+  def from_binary(
+        <<id::16, qr::1, opcode::4, aa::1, tc::1, rd::1, ra::1, z::1, ad::1, cd::1, rcode::4,
+          qdcount::16, ancount::16, nscount::16, arcount::16>> = _buffer
+      ) do
+    %Header{
+      id: id,
+      qr: qr,
+      opcode: OpCode.new(opcode),
+      aa: aa,
+      tc: tc,
+      rd: rd,
+      ra: ra,
+      z: z,
+      ad: ad,
+      cd: cd,
+      rcode: RCode.new(rcode),
+      qdcount: qdcount,
+      ancount: ancount,
+      nscount: nscount,
+      arcount: arcount
+    }
+  end
 
-  @spec to_print(DNS.Message.Header.t()) :: binary()
-  def to_print(header = %Header{}) do
-    """
-    ID: #{header.id}, qr: #{header.qr}, opcode: #{header.opcode |> OpCode.get_name()}, status: #{header.rcode |> RCode.get_name()}
-    aa: #{header.aa}, tc: #{header.tc}, rd: #{header.rd}, ra: #{header.ra}, z: #{header.z}, ad: #{header.ad}, cd: #{header.cd}
-    QUERY: #{header.qdcount}, ANSWER: #{header.ancount}, AUTHORITY: #{header.nscount}, ADDITIONAL: #{header.arcount}
-    """
-  rescue
-    e ->
+  def qdcount(<<_::32, count::16, _::binary>>), do: count
+  def ancount(<<_::48, count::16, _::binary>>), do: count
+  def nscount(<<_::64, count::16, _::binary>>), do: count
+  def arcount(<<_::80, count::16, _>>), do: count
+
+  defimpl DNS.Parameter, for: DNS.Message.Header do
+    @impl true
+    def to_binary(%DNS.Message.Header{} = header) do
+      <<header.id::16, header.qr::1, header.opcode::4, header.aa::1, header.tc::1, header.rd::1,
+        header.ra::1, header.z::1, header.ad::1, header.cd::1, header.rcode::4,
+        header.qdcount::16, header.ancount::16, header.nscount::16, header.arcount::16>>
+    end
+  end
+
+  defimpl String.Chars, for: DNS.Message.Header do
+    @impl true
+    @spec to_string(DNS.Message.Header.t()) :: binary()
+    def to_string(header) do
       """
-      HEADER Error:
-      #{inspect(e)}
-      #{inspect(header)}
+      ID: #{header.id}, qr: #{header.qr}, opcode: #{header.opcode}, status: #{header.rcode}
+      aa: #{header.aa}, tc: #{header.tc}, rd: #{header.rd}, ra: #{header.ra}, z: #{header.z}, ad: #{header.ad}, cd: #{header.cd}
+      QUERY: #{header.qdcount}, ANSWER: #{header.ancount}, AUTHORITY: #{header.nscount}, ADDITIONAL: #{header.arcount}
       """
+    rescue
+      e ->
+        """
+        HEADER Error:
+        #{inspect(e)}
+        #{inspect(header)}
+        """
+    end
   end
 end

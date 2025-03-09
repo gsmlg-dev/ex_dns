@@ -18,6 +18,20 @@ defmodule DNS.Message.OpCode do
   - [Domain Name System (DNS) IANA Considerations](https://tools.ietf.org/html/rfc6895)
   """
 
+  @type t :: %__MODULE__{value: <<_::4>>}
+
+  defstruct value: 0
+
+  alias DNS.Message.OpCode
+
+  def new(value) when is_integer(value) do
+    %OpCode{value: <<value::4>>}
+  end
+
+  def new(value) do
+    %OpCode{value: value}
+  end
+
   @doc """
   # query is a standard query
   [RFC1035](https://tools.ietf.org/html/rfc1035)
@@ -60,15 +74,19 @@ defmodule DNS.Message.OpCode do
   @spec dso() :: 6
   def dso(), do: 6
 
-  @spec get_name(0 | 1 | 2 | 4 | 5 | 6) :: :dso | :iquery | :notify | :query | :status | :update
-  def get_name(0), do: :query
-  def get_name(1), do: :iquery
-  def get_name(2), do: :status
-  def get_name(4), do: :notify
-  def get_name(5), do: :update
-  def get_name(6), do: :dso
-
-  def get_name(code) when is_integer(code) and (code == 3 or (code > 6 and code <= 15)) do
-    :unassigned
+  defimpl String.Chars, for: DNS.Message.OpCode do
+    @impl true
+    @spec to_string(DNS.Message.OpCode.t()) :: binary()
+    def to_string(op_code) do
+      case op_code.value do
+        0 -> "Query"
+        1 -> "IQuery"
+        2 -> "Status"
+        4 -> "Notify"
+        5 -> "Update"
+        6 -> "DSO"
+        value -> "Unassigned(#{value})"
+      end
+    end
   end
 end

@@ -64,136 +64,47 @@ defmodule DNS.Message.RCode do
   - [DOMAIN NAMES - IMPLEMENTATION AND SPECIFICATION](https://tools.ietf.org/html/rfc1035)
   - [Domain Name System (DNS) IANA Considerations](https://tools.ietf.org/html/rfc6895)
   """
+  alias DNS.Message.RCode
 
-  @doc """
-  # No Error
-  [RFC1035](https://tools.ietf.org/html/rfc1035)
-  """
-  @spec no_error() :: 0
-  def no_error(), do: 0
+  @type t :: %__MODULE__{value: <<_::4>>}
 
-  @doc """
-  # Format Error
-  """
-  def form_err(), do: 1
+  defstruct value: <<0::4>>, extended: <<0::8>>
 
-  @doc """
-  # Server Failure
-  """
-  @spec serv_fail() :: 2
-  def serv_fail(), do: 2
+  def new(value) when is_integer(value), do: new(<<value::4>>)
 
-  @doc """
-  # Non-Existent Domain
-  """
-  def nx_domain, do: 3
+  def new(value) do
+    %RCode{value: value}
+  end
 
-  @doc """
-  # Not Implemented
-  """
-  def not_imp(), do: 4
+  def extend(rcode = %RCode{}, extended) when is_integer(extended),
+    do: extend(rcode, <<extended::8>>)
 
-  @doc """
-  # Query Refused
-  """
-  def refused(), do: 5
+  def extend(rcode = %RCode{}, extended), do: %{rcode | extended: extended}
 
-  @doc """
-  # Name Exists when it should not
-  """
-  def yx_domain(), do: 6
-
-  @doc """
-  # RR Set Exists when it should not
-  """
-  def yx_rr_set(), do: 7
-
-  @doc """
-  # RR Set that should exist does not
-  """
-  def nx_rr_set(), do: 8
-
-  @doc """
-  # Server Not Authoritative for zone
-  # Not Authorized
-  """
-  def not_auth(), do: 9
-
-  @doc """
-  # Name not contained in zone
-  """
-  def not_zone(), do: 10
-
-  @doc """
-  # DSO-TYPE Not Implemented
-  """
-  def dso_type_ni(), do: 11
-
-  @doc """
-  # Bad OPT Version
-  """
-  def bad_vers(), do: 16
-
-  @doc """
-  # TSIG Signature Failure
-  """
-  def bad_sig(), do: 16
-
-  @doc """
-  # Key not recognized
-  """
-  def bad_key(), do: 17
-
-  @doc """
-  # Signature out of time window
-  """
-  def bad_time(), do: 18
-
-  @doc """
-  # Bad TKEY Mode
-  """
-  def bad_mode(), do: 19
-
-  @doc """
-  # Duplicate key name
-  """
-  def bad_name(), do: 20
-
-  @doc """
-  # Algorithm not supported
-  """
-  def bad_alg(), do: 21
-
-  @doc """
-  # Bad Truncation
-  """
-  def bad_trunc(), do: 22
-
-  @doc """
-  # Bad/missing Server Cookie
-  """
-  def bad_cookie(), do: 23
-
-  def get_name(0), do: :no_error
-  def get_name(1), do: :form_err
-  def get_name(2), do: :serv_fail
-  def get_name(3), do: :nx_domain
-  def get_name(4), do: :not_imp
-  def get_name(5), do: :refused
-  def get_name(6), do: :yx_domain
-  def get_name(7), do: :yx_rr_set
-  def get_name(8), do: :nx_rr_set
-  def get_name(9), do: :not_auth
-  def get_name(10), do: :not_zone
-  def get_name(11), do: :dso_type_ni
-  def get_name(16), do: :bad_vers
-  # def get_name(16, :opt), do: :bad_vers
-  # def get_name(16, :sig), do: :bad_sig
-  def get_name(17), do: :bad_key
-  def get_name(18), do: :bad_time
-  def get_name(19), do: :bad_mode
-  def get_name(20), do: :bad_name
-  def get_name(21), do: :bad_alg
-  def get_name(22), do: :bad_trunc
-  def get_name(23), do: :bad_cookie
+  defimpl String.Chars, for: DNS.Message.RCode do
+    @impl true
+    @spec to_string(DNS.Message.RCode.t()) :: binary()
+    def to_string(rcode) do
+      if rcode.extended == <<0::8>> do
+        case rcode.value do
+          0 -> "NoError"
+          1 -> "FormErr"
+          2 -> "ServFail"
+          3 -> "NXDomain"
+          4 -> "NotImp"
+          5 -> "Refused"
+          6 -> "YXDomain"
+          7 -> "YXRRSet"
+          8 -> "NXRRSet"
+          9 -> "NotAuth"
+          10 -> "NotZone"
+          11 -> "DSOTYPENI"
+          value when value in 12..15 -> "Unassigned(#{value})"
+          value -> "Unassigned(#{value})"
+        end
+      else
+        "Extended(#{rcode.value},#{rcode.extended})"
+      end
+    end
+  end
 end

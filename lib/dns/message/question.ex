@@ -5,56 +5,47 @@ defmodule DNS.Message.Question do
   """
   require Logger
 
-  alias DNS.Message.Question
   alias DNS.Class
-  alias DNS.ResourceRecord.Type, as: RType
+  alias DNS.Message.Question
+  alias DNS.Message.Domain
+  alias DNS.ResourceRecordType, as: RRType
   alias DNS.Message.Header
-
-  import DNS.Message.NameUtils
 
   @type t :: %__MODULE__{
           # name: binary
-          name: String.t(),
+          name: Domain.t(),
           # type: uint16
-          type: integer(),
+          type: RRType.t(),
           # class: uint16
-          class: integer()
+          class: Class.t()
         }
 
-  defstruct name: ".",
-            type: RType.a(),
-            class: Class.internet()
+  defstruct name: Domain.new("."),
+            type: RRType.new(<<1::16>>),
+            class: Class.new(<<1::16>>)
 
-  @spec to_buffer(Question.t()) :: <<_::32, _::_*8>>
-  def to_buffer(%__MODULE__{} = question) do
-    <<name_to_buffer(question.name)::binary, question.type::16, question.class::16>>
+  def new(name, type, class) do
+    %__MODULE__{
+      name: Domain.new(name),
+      type: RRType.new(type),
+      class: Class.new(class)
+    }
   end
 
-  @spec from_buffer(<<_::40, _::_*8>>) :: {pos_integer(), Question.t()}
-  def from_buffer(buffer, message \\ <<>>) do
-    with {name_length, name} <- name_from_buffer(buffer, message),
-         <<_::binary-size(name_length), type::16, class::16, _::binary>> <- buffer do
-      {name_length + 4, %__MODULE__{name: name, type: type, class: class}}
+  @spec from_binary(<<_::40, _::_*8>>) :: Question.t()
+  def from_binary(buffer, message \\ <<>>) do
+    with domain <- Domain.from_binary(buffer, message),
+         <<_::binary-size(domain.size), type::16, class::16, _::binary>> <- buffer do
+      %__MODULE__{name: domain, type: RRType.new(<<type::16>>), class: Class.new(<<class::16>>)}
     else
       error ->
         throw({:format_error, :question, error})
     end
   end
 
-  @spec new(binary(), integer(), integer()) :: Question.t()
-  def new(name, type, class) do
-    new_name = name |> name_to_buffer() |> name_from_buffer() |> elem(1)
-
-    %__MODULE__{
-      name: new_name,
-      type: type,
-      class: class
-    }
-  end
-
-  @spec list_to_buffer([Question.t()]) :: binary()
-  def list_to_buffer(list) when is_list(list) do
-    list |> Enum.map(&to_buffer/1) |> Enum.join(<<>>)
+  @spec list_to_binary([Question.t()]) :: binary()
+  def list_to_binary(list) when is_list(list) do
+    list |> Enum.map(&DNS.to_binary/1) |> Enum.join(<<>>)
   end
 
   @spec list_from_message(binary()) :: {non_neg_integer(), list()}
@@ -63,7 +54,6 @@ defmodule DNS.Message.Question do
   end
 
   def list_from_message(message) do
-    Logger.error("Error list_from_message/1: #{inspect(message)}")
     throw({:format_error, :question, message})
   end
 
@@ -75,27 +65,28 @@ defmodule DNS.Message.Question do
   def list_from_message(<<_::binary-size(12), buffer::binary>> = message, qdcount)
       when byte_size(message) >= 12 + 5 and is_integer(qdcount) and qdcount > 0 do
     Enum.reduce(1..qdcount, {0, []}, fn _, {all_size, questions} ->
-      {size, question} =
-        from_buffer(binary_part(buffer, all_size, byte_size(buffer) - all_size), message)
+      question =
+        from_binary(binary_part(buffer, all_size, byte_size(buffer) - all_size), message)
 
-      {all_size + size, questions ++ [question]}
+      {all_size + question.name.size + 4, questions ++ [question]}
     end)
   end
 
   def list_from_message(message, qdcount) do
-    Logger.error("Error list_from_message/2: #{inspect(message)} #{inspect(qdcount)}")
-    throw({:format_error, :question, message})
+    throw({:format_error, :question, message, qdcount})
   end
 
-  @spec to_print(Question.t()) :: binary()
-  def to_print(question = %__MODULE__{}) do
-    "#{question.name} #{RType.to_print(question.type)} #{Class.to_print(question.class)}"
-  rescue
-    e ->
-      """
-      QUESTION Error:
-      #{inspect(e)}
-      #{inspect(question)}
-      """
+  defimpl DNS.Parameter, for: DNS.Message.Question do
+    @impl true
+    def to_binary(%DNS.Message.Question{} = question) do
+      DNS.to_binary(question.name) <>
+        DNS.to_binary(question.type) <> DNS.to_binary(question.class)
+    end
+  end
+
+  defimpl String.Chars, for: DNS.Message.Question do
+    def to_string(question) do
+      "#{question.name} #{question.type} #{question.class}"
+    end
   end
 end

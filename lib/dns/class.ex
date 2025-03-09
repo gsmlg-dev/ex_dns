@@ -39,14 +39,22 @@ defmodule DNS.Class do
   - [YANG Types for DNS Classes and Resource Record Types](https://tools.ietf.org/html/rfc9108)
   """
 
+  @type t :: %__MODULE__{value: <<_::16>>}
+
+  alias DNS.Class
+
   defstruct value: <<0::16>>
 
-  def validate!(value) when 0 <= value and value <= 65535 do
-    %DNS.Class{value: value}
+  @doc """
+  # Create a new Class struct
+  """
+  @spec new(<<_::16>> | integer()) :: Class.t()
+  def new(value) when is_integer(value) do
+    %Class{value: <<value::16>>}
   end
 
-  def validate!(_) do
-    raise ArgumentError, "Value must be between 0 and 65535"
+  def new(value) do
+    %Class{value: value}
   end
 
   @doc """
@@ -84,26 +92,30 @@ defmodule DNS.Class do
   """
   @spec qclass_any() :: 255
   def qclass_any(), do: 255
+end
 
-  def get_name(0), do: :reserved
-  def get_name(1), do: :internet
-  def get_name(3), do: :chaos
-  def get_name(4), do: :hesiod
-  def get_name(254), do: :qclass_none
-  def get_name(255), do: :qclass_any
-  def get_name(code), do: code
+defimpl DNS.Parameter, for: DNS.Class do
+  @impl true
+  def to_binary(%DNS.Class{value: value}) do
+    <<value::16>>
+  end
+end
 
-  def to_print(code)
-  def to_print(1), do: "IN"
-  def to_print(3), do: "CH"
-  def to_print(4), do: "HS"
-  def to_print(254), do: "NONE"
-  def to_print(255), do: "ANY"
-  def to_print(code) when code == 0 or code == 65535, do: "Reserved(#{code})"
+defimpl String.Chars, for: DNS.Class do
+  @impl true
+  @spec to_string(DNS.Class.t()) :: binary()
+  def to_string(class) do
+    <<value::16>> = class.value
 
-  def to_print(code)
-      when code == 2 or (code >= 5 and code <= 253) or (code >= 256 and code <= 65279),
-      do: "Unassigned(#{code})"
-
-  def to_print(code) when code >= 65280 and code <= 65280, do: "Reserved_for_Private_Use(#{code})"
+    case value do
+      1 -> "IN"
+      3 -> "CH"
+      4 -> "HS"
+      254 -> "NONE"
+      255 -> "ANY"
+      value when value in [0, 65535] -> "Reserved(#{value})"
+      value when value == 2 or value in 5..253 or value in 256..65279 -> "Unassigned(#{value})"
+      value when value in 65280..65534 -> "Reserved_for_Private_Use(#{value})"
+    end
+  end
 end
