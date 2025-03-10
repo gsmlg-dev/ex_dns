@@ -85,8 +85,10 @@ defmodule DNS.Message.RCode do
     @impl true
     @spec to_string(DNS.Message.RCode.t()) :: binary()
     def to_string(rcode) do
+      <<value::4>> = rcode.value
+
       if rcode.extended == <<0::8>> do
-        case rcode.value do
+        case value do
           0 -> "NoError"
           1 -> "FormErr"
           2 -> "ServFail"
@@ -103,7 +105,7 @@ defmodule DNS.Message.RCode do
           value -> "Unassigned(#{value})"
         end
       else
-        "Extended(#{rcode.value},#{rcode.extended})"
+        "Extended(#{value},#{rcode.extended})"
       end
     end
   end

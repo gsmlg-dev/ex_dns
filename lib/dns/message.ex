@@ -71,7 +71,9 @@ defmodule DNS.Message do
 
   def from_binary(<<header_bytes::binary-size(12), _::binary>> = message) do
     header = Header.from_binary(header_bytes)
-    {qd_size, qdlist} = Question.list_from_message(message, header.qdcount)
+
+    {qdlist, qd_size} = Question.list_from_message(message, header.qdcount)
+
     {anlist, offset} = Record.list_from_message(header.ancount, message, 12 + qd_size)
 
     {nslist, offset} =

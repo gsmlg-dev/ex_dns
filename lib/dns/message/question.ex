@@ -59,17 +59,20 @@ defmodule DNS.Message.Question do
 
   @spec list_from_message(binary(), non_neg_integer()) :: {non_neg_integer(), list()}
   def list_from_message(<<_::binary-size(12), _::binary>> = _message, 0) do
-    {0, []}
+    {[], 0}
   end
 
   def list_from_message(<<_::binary-size(12), buffer::binary>> = message, qdcount)
       when byte_size(message) >= 12 + 5 and is_integer(qdcount) and qdcount > 0 do
-    Enum.reduce(1..qdcount, {0, []}, fn _, {all_size, questions} ->
-      question =
-        from_binary(binary_part(buffer, all_size, byte_size(buffer) - all_size), message)
+    {size, questions} =
+      Enum.reduce(1..qdcount, {0, []}, fn _, {all_size, questions} ->
+        question =
+          from_binary(binary_part(buffer, all_size, byte_size(buffer) - all_size), message)
 
-      {all_size + question.name.size + 4, questions ++ [question]}
-    end)
+        {all_size + question.name.size + 4, [question | questions]}
+      end)
+
+    {Enum.reverse(questions), size}
   end
 
   def list_from_message(message, qdcount) do

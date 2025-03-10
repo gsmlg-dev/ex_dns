@@ -78,7 +78,9 @@ defmodule DNS.Message.OpCode do
     @impl true
     @spec to_string(DNS.Message.OpCode.t()) :: binary()
     def to_string(op_code) do
-      case op_code.value do
+      <<value::4>> = op_code.value
+
+      case value do
         0 -> "Query"
         1 -> "IQuery"
         2 -> "Status"

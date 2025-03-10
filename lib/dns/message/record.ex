@@ -80,7 +80,7 @@ defmodule DNS.Message.Record do
     with domain <- Domain.from_binary(buffer, message),
          <<_::binary-size(domain.size), type::16, class::16, ttl::32, rdlength::16, rest::binary>> <-
            buffer,
-         <<rdata::binary-size(rdlength), _>> <- rest do
+         <<rdata::binary-size(rdlength), _::binary>> <- rest do
       rtype = RRType.new(<<type::16>>)
 
       %Record{
@@ -92,9 +92,11 @@ defmodule DNS.Message.Record do
       }
     else
       error ->
-        throw({:format_error, error})
+        throw({"DNS.Message.Record format error", error, buffer, message})
     end
   end
+
+  def list_from_message(0, _message, offset), do: {[], offset}
 
   def list_from_message(count, message, offset) do
     {record_list, end_offset} =

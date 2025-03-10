@@ -130,7 +130,9 @@ defmodule DNS.ResourceRecordType do
   @doc """
   # Create a new Class struct
   """
-  @spec new(<<_::16>>) :: ResourceRecordType.t()
+  @spec new(<<_::16>> | integer()) :: ResourceRecordType.t()
+  def new(value) when is_integer(value), do: new(<<value::16>>)
+
   def new(value) do
     %ResourceRecordType{value: value}
   end
@@ -145,7 +147,9 @@ defmodule DNS.ResourceRecordType do
   defimpl String.Chars, for: DNS.ResourceRecordType do
     @impl true
     def to_string(rr_type) do
-      case rr_type.value do
+      <<value::16>> = rr_type.value
+
+      case value do
         1 ->
           "A"
 

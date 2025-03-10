@@ -73,12 +73,12 @@ defmodule DNS.Message.Domain do
         {1 + size + last_size, part <> "." <> last_name}
 
       <<_::binary-size(size), _::binary>> ->
-        throw({FormatError, size, rest, message})
+        throw({"DNS.Message.Domain Format Error", size, rest, message})
     end
   end
 
   defp parse_domain_from_message(buffer, message) do
-    throw({FormatError, buffer, message})
+    throw({"DNS.Message.Domain Format Error", buffer, message})
   end
 
   defp domain_byte_size(domain) do
@@ -119,7 +119,7 @@ defmodule DNS.Message.Domain do
     @impl true
     @spec to_string(Domain.t()) :: binary()
     def to_string(domain) do
-      "#{domain.value |> elem(1)}"
+      "#{domain.value}"
     end
   end
 end

@@ -22,7 +22,7 @@ defmodule DNS.Message.Recrod.Data do
 
   defimpl String.Chars, for: DNS.Message.Recrod.Data do
     def to_string(record) do
-      "#{record.data}"
+      record.data |> inspect()
     end
   end
 end
