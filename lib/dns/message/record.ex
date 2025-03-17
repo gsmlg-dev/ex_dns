@@ -56,13 +56,14 @@ defmodule DNS.Message.Record do
   alias DNS.Message.Domain
   alias DNS.Message.Record
   alias DNS.ResourceRecordType, as: RRType
-  alias DNS.Message.Recrod.Data, as: RData
+  alias DNS.Message.Record.Data, as: RData
 
   @type t :: %__MODULE__{
           name: Domain.t(),
           type: RRType.t(),
           class: Class.t(),
           ttl: 0..4_294_967_295,
+          rdlength: 0..65535,
           data: RData.t()
         }
 
@@ -70,10 +71,14 @@ defmodule DNS.Message.Record do
             type: RRType.new(1),
             class: Class.new(1),
             ttl: 0,
-            data: RData.new(RRType.new(1), 4, <<0, 0, 0, 0>>)
+            rdlength: nil,
+            data: RData.new(RRType.new(1), {0, 0, 0, 0})
 
   def new(name, type, class, ttl, data) do
-    %__MODULE__{name: name, type: type, class: class, ttl: ttl, data: data}
+    domain = Domain.new(name)
+    rtype = RRType.new(type)
+    rclass = Class.new(class)
+    %__MODULE__{name: domain, type: rtype, class: rclass, ttl: ttl, data: RData.new(rtype, data)}
   end
 
   def from_binary(buffer, message \\ <<>>) do
@@ -88,7 +93,8 @@ defmodule DNS.Message.Record do
         type: rtype,
         class: Class.new(class),
         ttl: ttl,
-        data: RData.new(rtype, rdlength, rdata, message)
+        rdlength: rdlength,
+        data: RData.from_binary(type, rdata, message)
       }
     else
       error ->
@@ -103,6 +109,7 @@ defmodule DNS.Message.Record do
       Enum.reduce(1..count, {[], offset}, fn _, {records, offset} ->
         <<_::binary-size(offset), buffer::binary>> = message
         record = from_binary(buffer, message)
+
         {[record | records], offset + record.name.size + 2 + 2 + 4 + 2 + record.data.rdlength}
       end)
 

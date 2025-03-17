@@ -38,21 +38,25 @@ defmodule DNS.Message.Domain do
 
   defp parse_domain_from_message(<<size::8, _::binary>>, _) when size == 0, do: {1, "."}
 
-  defp parse_domain_from_message(<<size::8, pos::8, rest::binary>>, message) when size == 0xC0 do
+  defp parse_domain_from_message(<<pointer::2, pos::14, rest::binary>>, message)
+       when pointer == 0b11 do
     case message do
       <<_::binary-size(pos), next::8, next_buffer::binary>> when next > 0 and next < 64 ->
         {_, name} = parse_domain_from_message(<<next::8, next_buffer::binary>>, message)
         {2, name}
 
-      <<_::binary-size(pos), next::8, next_pos::8, next_buffer::binary>>
-      when next == 0xC0 and pos != next_pos ->
+      <<_::binary-size(pos), next_pointer::2, next_pos::14, next_buffer::binary>>
+      when next_pointer == 0b11 and pos != next_pos ->
         {_, name} =
-          parse_domain_from_message(<<next::8, next_pos::8, next_buffer::binary>>, message)
+          parse_domain_from_message(
+            <<next_pointer::2, next_pos::8, next_buffer::binary>>,
+            message
+          )
 
         {2, name}
 
       _ ->
-        throw({FormatError, size, pos, rest, message})
+        throw({"DNS.Message.Domain Format Error in pointer", pointer, pos, rest, message})
     end
   end
 
@@ -99,7 +103,7 @@ defmodule DNS.Message.Domain do
 
   defimpl DNS.Parameter, for: Domain do
     @impl true
-    def to_binary(%Domain{value: {_, domain}}) do
+    def to_binary(%Domain{value: domain}) do
       case String.split(domain, ".") |> Enum.filter(&(&1 != "")) do
         [] ->
           <<0>>
@@ -119,7 +123,7 @@ defmodule DNS.Message.Domain do
     @impl true
     @spec to_string(Domain.t()) :: binary()
     def to_string(domain) do
-      "#{domain.value}"
+      domain.value
     end
   end
 end

@@ -206,7 +206,7 @@ defmodule DNS.Message.Header do
   @doc false
   def from_binary(
         <<id::16, qr::1, opcode::4, aa::1, tc::1, rd::1, ra::1, z::1, ad::1, cd::1, rcode::4,
-          qdcount::16, ancount::16, nscount::16, arcount::16>> = _buffer
+          qdcount::16, ancount::16, nscount::16, arcount::16, _::binary>> = _buffer
       ) do
     %Header{
       id: id,

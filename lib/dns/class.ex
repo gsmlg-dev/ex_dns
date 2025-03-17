@@ -4,7 +4,8 @@ defmodule DNS.Class do
 
   # Note
   As noted in [RFC6762], Multicast DNS can only carry DNS records with classes in the range 0-32767.
-  Classes in the range 32768 to 65535 are incompatible with Multicast DNS.
+  Classes in the range 32768 to 65535 are incompatible with Multicast DNS. But Multicast DNS uses the
+  32768(0x8000) as a special value to indicate a cache-flush request.
 
   # Note
   When this registry is modified, the YANG module [iana-dns-class-rr-type]
@@ -32,6 +33,16 @@ defmodule DNS.Class do
       256-65279	0x0100-0xFEFF	Unassigned
       65280-65534	0xFF00-0xFFFE	Reserved for Private Use	[RFC6895]
       65535	0xFFFF	Reserved	[RFC6895]
+
+  # Multicasd DNS [RFC6762](https://datatracker.ietf.org/doc/html/rfc6762)
+
+   The value 0x8001 in the rrclass field
+   of a resource record in a Multicast DNS response message indicates a
+   resource record with class 1, with the cache-flush bit set.  When
+   receiving a resource record with the cache-flush bit set,
+   implementations should take care to mask off that bit before storing
+   the resource record in memory, or otherwise ensure that it is given
+   the correct semantic interpretation.
 
   # Reference
   - [iana](https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-2)
@@ -113,6 +124,7 @@ defimpl String.Chars, for: DNS.Class do
       4 -> "HS"
       254 -> "NONE"
       255 -> "ANY"
+      0x8001 -> "IN+"
       value when value in [0, 65535] -> "Reserved(#{value})"
       value when value == 2 or value in 5..253 or value in 256..65279 -> "Unassigned(#{value})"
       value when value in 65280..65534 -> "Reserved_for_Private_Use(#{value})"

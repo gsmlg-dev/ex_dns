@@ -18,4 +18,21 @@ defmodule DNS.MessageTest do
     # IO.inspect(msg, limit: :infinity)
     # IO.puts("#{to_string(msg)}")
   end
+
+  test "DNS message mdns response from_binary/1" do
+    raw =
+      <<0, 0, 132, 0, 0, 0, 0, 1, 0, 0, 0, 0, 12, 49, 48, 45, 49, 48, 48, 45, 49, 48, 45, 53, 50,
+        5, 108, 111, 99, 97, 108, 0, 0, 1, 128, 1, 0, 0, 14, 16, 0, 4, 10, 100, 10, 52>>
+
+    msg = DNS.Message.from_binary(raw)
+
+    [an | _rest] = msg.anlist
+
+    assert to_string(an.name) == "10-100-10-52.local."
+    assert to_string(an.type) == "A"
+    assert to_string(an.class) =~ "IN"
+
+    # IO.inspect(msg, limit: :infinity)
+    # IO.puts("#{to_string(msg)}")
+  end
 end

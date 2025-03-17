@@ -95,21 +95,21 @@ defmodule DNS.Message do
     def to_string(message) do
       anlist_str =
         if length(message.anlist) > 0 do
-          "\n;; ANSWER SECTION\n#{message.anlist |> Enum.join("\n")}"
+          "\n;; ANSWER SECTION\n#{message.anlist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
         else
           ""
         end
 
       nslist_str =
         if length(message.nslist) > 0 do
-          "\n;; AUTHORITY SECTION\n#{message.nslist |> Enum.join("\n")}"
+          "\n;; AUTHORITY SECTION\n#{message.nslist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
         else
           ""
         end
 
       arlist_str =
         if length(message.arlist) > 0 do
-          "\n;; ADDITIONAL SECTION\n#{message.arlist |> Enum.join("\n")}"
+          "\n;; ADDITIONAL SECTION\n#{message.arlist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
         else
           ""
         end
