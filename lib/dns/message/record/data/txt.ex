@@ -15,9 +15,16 @@ defmodule DNS.Message.Record.Data.TXT do
     %__MODULE__{raw: raw, data: text, rdlength: byte_size(raw)}
   end
 
-  def from_binary(raw, message \\ nil) do
-    data = Domain.from_binary(raw, message)
+  def from_binary(raw, _message \\ nil) do
+    data = parse_raw(raw)
     %__MODULE__{raw: raw, data: data, rdlength: byte_size(raw)}
+  end
+
+  defp parse_raw(<<>>), do: []
+  defp parse_raw(<<0, rest::binary>>), do: ["" | parse_raw(rest)]
+
+  defp parse_raw(<<length::8, data::binary-size(length), rest::binary>>) do
+    [data | parse_raw(rest)]
   end
 
   defimpl DNS.Parameter, for: DNS.Message.Record.Data.TXT do

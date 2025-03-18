@@ -32,7 +32,7 @@ defmodule DNS.Message.Question do
     }
   end
 
-  @spec from_binary(<<_::40, _::_*8>>) :: Question.t()
+  @spec from_binary(<<_::_*8>>, <<_::_*8>>) :: Question.t()
   def from_binary(buffer, message \\ <<>>) do
     with domain <- Domain.from_binary(buffer, message),
          <<_::binary-size(domain.size), type::16, class::16, _::binary>> <- buffer do

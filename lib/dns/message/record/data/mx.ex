@@ -23,7 +23,12 @@ defmodule DNS.Message.Record.Data.MX do
 
   def from_binary(<<weight::16, data::binary>>, message \\ nil) do
     domain = Domain.from_binary(data, message)
-    %__MODULE__{raw: <<weight::16, DNS.to_binary(domain)::binary>>, data: {weight, domain}, rdlength: byte_size(data) + 2}
+
+    %__MODULE__{
+      raw: <<weight::16, DNS.to_binary(domain)::binary>>,
+      data: {weight, domain},
+      rdlength: byte_size(data) + 2
+    }
   end
 
   defimpl DNS.Parameter, for: DNS.Message.Record.Data.MX do

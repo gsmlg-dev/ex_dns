@@ -73,7 +73,9 @@ defmodule DNS.Message.Domain do
         {1 + size + 2, part <> "." <> compressed_name}
 
       <<part::binary-size(size), next::8, next_buffer::binary>> when next > 0 and next < 64 ->
-        {last_size, last_name} = parse_domain_from_message(<<next, next_buffer::binary>>, message)
+        {last_size, last_name} =
+          parse_domain_from_message(<<next::8, next_buffer::binary>>, message)
+
         {1 + size + last_size, part <> "." <> last_name}
 
       <<_::binary-size(size), _::binary>> ->

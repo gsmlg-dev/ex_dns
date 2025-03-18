@@ -17,7 +17,11 @@ defmodule DNS.Message.Record.Data.SOA do
       <<DNS.to_binary(ns)::binary, DNS.to_binary(rp)::binary, serial::32, refresh::32, retry::32,
         expire::32, negative::32>>
 
-    %__MODULE__{raw: raw, data: {ns, rp, serial, refresh, retry, expire, negative}, rdlength: byte_size(raw)}
+    %__MODULE__{
+      raw: raw,
+      data: {ns, rp, serial, refresh, retry, expire, negative},
+      rdlength: byte_size(raw)
+    }
   end
 
   def from_binary(raw, message \\ nil) do
@@ -29,7 +33,11 @@ defmodule DNS.Message.Record.Data.SOA do
     <<serial::32, refresh::32, retry::32, expire::32, negative::32>> =
       binary_part(raw, ns.size + rp.size, byte_size(raw) - ns.size - rp.size)
 
-    %__MODULE__{raw: raw, data: {ns, rp, serial, refresh, retry, expire, negative}, rdlength: byte_size(raw)}
+    %__MODULE__{
+      raw: raw,
+      data: {ns, rp, serial, refresh, retry, expire, negative},
+      rdlength: byte_size(raw)
+    }
   end
 
   defimpl DNS.Parameter, for: DNS.Message.Record.Data.SOA do
