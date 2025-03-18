@@ -17,13 +17,25 @@ defmodule DNS.MessageTest do
     msg = Message.from_binary(raw)
 
     [qd] = msg.qdlist
+    [opt | _] = msg.arlist
 
     assert to_string(qd.name) == "www.google.com."
     assert to_string(qd.type) == "A"
     assert to_string(qd.class) == "IN"
 
+    assert opt.name == Domain.new(".")
+    assert opt.type == RRType.new(41)
+
+    edns0 = DNS.Message.EDNS0.from_binary(DNS.to_binary(opt))
+
+    assert edns0.version == 0
+    assert edns0.udp_payload == 1232
+    assert edns0.do_bit == 0
+    assert edns0.extended_rcode == 0
+    assert edns0.options == [{10, {<<210, 213, 222, 136, 249, 150, 28, 88>>, nil}}]
+
     # IO.inspect(msg, limit: :infinity)
-    # IO.puts("#{to_string(msg)}")
+    IO.puts("#{to_string(msg)}")
   end
 
   test "DNS message mdns response from_binary/1" do

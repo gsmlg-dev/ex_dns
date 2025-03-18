@@ -40,6 +40,7 @@ defmodule DNS.Message do
   alias DNS.Message.Header
   alias DNS.Message.Question
   alias DNS.Message.Record
+  alias DNS.ResourceRecordType, as: RRType
 
   @type t :: %__MODULE__{
           header: %Header{},
@@ -107,9 +108,17 @@ defmodule DNS.Message do
           ""
         end
 
+      otp = message.arlist |> Enum.find(fn record -> record.type == RRType.new(41) end)
+      arlist = message.arlist |> Enum.filter(fn record -> record.type != RRType.new(41) end)
+      edns0 = if !is_nil(otp) do
+        otp
+        |> DNS.to_binary()
+        |> DNS.Message.EDNS0.from_binary()
+      end
+
       arlist_str =
-        if length(message.arlist) > 0 do
-          "\n;; ADDITIONAL SECTION\n#{message.arlist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
+        if length(arlist) > 0 do
+          "\n;; ADDITIONAL SECTION\n#{arlist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
         else
           ""
         end
@@ -118,7 +127,7 @@ defmodule DNS.Message do
       ;; HEADER SECTION
       #{message.header}
       ;; QUESTION SECTION
-      #{message.qdlist |> Enum.join("\n")}
+      #{message.qdlist |> Enum.join("\n")}#{if(!is_nil(edns0), do: "\n#{edns0}", else: "")}
       #{anlist_str}#{nslist_str}#{arlist_str}
       """
     end

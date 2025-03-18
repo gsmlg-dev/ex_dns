@@ -107,7 +107,7 @@ end
 
 defimpl DNS.Parameter, for: DNS.Class do
   @impl true
-  def to_binary(%DNS.Class{value: value}) do
+  def to_binary(%DNS.Class{value: <<value::16>>}) do
     <<value::16>>
   end
 end

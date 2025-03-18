@@ -272,6 +272,12 @@ defmodule DNS.Message.EDNS0 do
           65535	Reserved for future expansion		[RFC6891](https://datatracker.ietf.org/doc/html/rfc6891)
     """
 
+    defstruct code: 0, data: nil
+
+    def new(code, data) do
+      {code, data}
+    end
+
     @doc """
     Parse Option
 
@@ -633,6 +639,18 @@ defmodule DNS.Message.EDNS0 do
 
     def to_print({code, data}) do
       "; #{code}: #{data}"
+    end
+
+  end
+
+  defimpl String.Chars, for: DNS.Message.EDNS0 do
+    def to_string(edns0 = %DNS.Message.EDNS0{}) do
+      DNS.Message.EDNS0.to_print(edns0)
+      opt_str = edns0.options |> Enum.map(fn opt -> Option.to_print(opt) end) |> Enum.join("\n")
+
+      """
+      ; EDNS: version: #{edns0.version}, flags: #{if(edns0.do_bit == 1, do: "DO")} udp: #{edns0.udp_payload}#{if(length(edns0.options) > 0, do: "\n#{opt_str}")}
+      """
     end
   end
 end
