@@ -3,8 +3,8 @@ defmodule DNS.MessageTest do
 
   alias DNS.Message
   alias DNS.Message.Domain
-  alias DNS.Message.Question
-  alias DNS.Message.Record
+  # alias DNS.Message.Question
+  # alias DNS.Message.Record
   alias DNS.ResourceRecordType, as: RRType
   alias DNS.Class
 
@@ -14,7 +14,7 @@ defmodule DNS.MessageTest do
         3, 99, 111, 109, 0, 0, 1, 0, 1, 0, 0, 41, 4, 208, 0, 0, 0, 0, 0, 12, 0, 10, 0, 8, 210,
         213, 222, 136, 249, 150, 28, 88>>
 
-    msg = DNS.Message.from_binary(raw)
+    msg = Message.from_binary(raw)
 
     [qd] = msg.qdlist
 
@@ -31,7 +31,7 @@ defmodule DNS.MessageTest do
       <<0, 0, 132, 0, 0, 0, 0, 1, 0, 0, 0, 0, 12, 49, 48, 45, 49, 48, 48, 45, 49, 48, 45, 53, 50,
         5, 108, 111, 99, 97, 108, 0, 0, 1, 128, 1, 0, 0, 14, 16, 0, 4, 10, 100, 10, 52>>
 
-    msg = DNS.Message.from_binary(raw1)
+    msg = Message.from_binary(raw1)
 
     [an | _rest] = msg.anlist
 
@@ -58,7 +58,7 @@ defmodule DNS.MessageTest do
         4, 118, 118, 61, 48, 192, 12, 0, 47, 128, 1, 0, 0, 17, 148, 0, 9, 192, 12, 0, 5, 0, 0,
         128, 0, 64>>
 
-    msg = DNS.Message.from_binary(raw2)
+    msg = Message.from_binary(raw2)
 
     [an1 | _] = msg.anlist
     [an2 | _] = msg.arlist
@@ -77,6 +77,6 @@ defmodule DNS.MessageTest do
     assert an2.ttl == 4500
     assert to_string(an2.data) == "EA7D979FB7FB@Jonathan's MacBook Pro._raop._tcp.local. TXT SRV"
 
-    IO.puts("#{to_string(msg)}")
+    # IO.puts("#{to_string(msg)}")
   end
 end
