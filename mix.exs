@@ -1,7 +1,7 @@
 defmodule DNS.MixProject do
   use Mix.Project
 
-  @source_url "https://github.com/gsmlg-dev/ex_dns.git"
+  @source_url "https://github.com/gsmlg-dev/ex_dns"
   @version "0.0.0"
 
   def project do
