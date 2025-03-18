@@ -61,7 +61,7 @@ defmodule DNS.Message.Record.Data do
       # 41 -> RData.OPT.from_binary(raw, message)
       # 43 -> RData.DS.from_binary(raw, message)
       # 46 -> RData.RRSIG.from_binary(raw, message)
-      # 47 -> RData.NSEC.from_binary(raw, message)
+      47 -> RData.NSEC.from_binary(raw, message)
       # 48 -> RData.DNSKEY.from_binary(raw, message)
       # 49 -> RData.DHCID.from_binary(raw, message)
       # 50 -> RData.NSEC3.from_binary(raw, message)

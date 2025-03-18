@@ -75,7 +75,8 @@ defmodule DNS.MessageTest do
     assert an2.type == RRType.new(47)
     assert an2.class == Class.new(0x8001)
     assert an2.ttl == 4500
+    assert to_string(an2.data) == "EA7D979FB7FB@Jonathan's MacBook Pro._raop._tcp.local. TXT SRV"
 
-    # IO.puts("#{to_string(msg)}")
+    IO.puts("#{to_string(msg)}")
   end
 end
