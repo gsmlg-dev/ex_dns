@@ -8,7 +8,7 @@ defmodule DNS.MessageTest do
   alias DNS.ResourceRecordType, as: RRType
   alias DNS.Class
 
-  test "DNS message from_binary/1" do
+  test "DNS message query with cookie from_binary/1" do
     raw =
       <<118, 11, 1, 32, 0, 1, 0, 0, 0, 0, 0, 1, 3, 119, 119, 119, 6, 103, 111, 111, 103, 108, 101,
         3, 99, 111, 109, 0, 0, 1, 0, 1, 0, 0, 41, 4, 208, 0, 0, 0, 0, 0, 12, 0, 10, 0, 8, 210,
@@ -32,10 +32,10 @@ defmodule DNS.MessageTest do
     assert edns0.udp_payload == 1232
     assert edns0.do_bit == 0
     assert edns0.extended_rcode == 0
-    assert edns0.options == [{10, {<<210, 213, 222, 136, 249, 150, 28, 88>>, nil}}]
+    assert Enum.map(edns0.options, &to_string/1) == ["COOKIE: D2D5DE88F9961C58"]
 
     # IO.inspect(msg, limit: :infinity)
-    IO.puts("#{to_string(msg)}")
+    # IO.puts("#{to_string(msg)}")
   end
 
   test "DNS message mdns response from_binary/1" do

@@ -130,12 +130,12 @@ defmodule DNS.Message.EDNS0 do
   alias DNS.Message.EDNS0.Option
 
   @type t :: %__MODULE__{
-          udp_payload: integer(),
-          extended_rcode: integer(),
-          version: integer(),
-          do_bit: integer(),
-          flags: integer(),
-          options: []
+          udp_payload: 0..65535,
+          extended_rcode: 0..255,
+          version: 0..255,
+          do_bit: 0 | 1,
+          flags: 0..32767,
+          options: [Option.t()]
         }
 
   defstruct udp_payload: 0,
@@ -144,28 +144,6 @@ defmodule DNS.Message.EDNS0 do
             do_bit: 0,
             flags: 0,
             options: []
-
-  def from_binary(
-        <<0::8, 41::16, udp_payload::16, extended_rcode::8, version::8, do_bit::1, flags::15,
-          rdlenght::16, rdata::binary>>
-      ) do
-    %EDNS0{
-      udp_payload: udp_payload,
-      extended_rcode: extended_rcode,
-      version: version,
-      do_bit: do_bit,
-      flags: flags,
-      options: parse_rdata(rdlenght, rdata)
-    }
-  end
-
-  @doc """
-  Converts a Record struct to binary data.
-  """
-  def to_binary(edns0 = %__MODULE__{}) do
-    <<0::8, 41::16, edns0.udp_payload::16, edns0.extended_rcode::8, edns0.version::8,
-      edns0.do_bit::1, edns0.flags::15, encode_options(edns0.options)::binary>>
-  end
 
   def new() do
     %__MODULE__{
@@ -178,72 +156,74 @@ defmodule DNS.Message.EDNS0 do
     }
   end
 
-  def is_opt(<<0::8, 41::16, _::binary>>), do: true
-  def is_opt(_), do: false
-
-  def add_option(edns0 = %__MODULE__{}, code, data) do
-    %EDNS0{edns0 | options: [{code, data} | edns0.options]}
+  def new({udp_payload, extended_rcode, version, do_bit, flags, options}) do
+    %EDNS0{
+      udp_payload: udp_payload,
+      extended_rcode: extended_rcode,
+      version: version,
+      do_bit: do_bit,
+      flags: flags,
+      options: options
+    }
   end
 
-  def to_print(edns0 = %__MODULE__{}) do
-    opt_str = edns0.options |> Enum.map(fn opt -> Option.to_print(opt) end) |> Enum.join("\n")
-
-    """
-    ; EDNS: version: #{edns0.version}, flags: #{if(edns0.do_bit == 1, do: "DO")} udp: #{edns0.udp_payload}#{if(length(edns0.options) > 0, do: "\n#{opt_str}")}
-    """
+  def from_binary(
+        <<0::8, 41::16, udp_payload::16, extended_rcode::8, version::8, do_bit::1, flags::15,
+          rdlenght::16, rdata::binary-size(rdlenght)>>
+      ) do
+    %EDNS0{
+      udp_payload: udp_payload,
+      extended_rcode: extended_rcode,
+      version: version,
+      do_bit: do_bit,
+      flags: flags,
+      options: parse_options(rdata)
+    }
   end
 
-  defp parse_rdata(rdlength, rdata) do
-    with rdata_size <- byte_size(rdata),
-         true <- rdlength == 0 or rdlength > 4,
-         true <- rdata_size == rdlength do
-      if rdlength > 0 do
-        seek_option(rdata)
-      else
-        []
-      end
-    else
-      e ->
-        throw({:invalid_rdlength, e, rdlength, rdata})
+  def add_option(edns0 = %__MODULE__{options: options}, option) do
+    %EDNS0{edns0 | options: [option | options]}
+  end
+
+  defp parse_options(<<>>) do
+    []
+  end
+
+  defp parse_options(<<code::16, len::16, data::binary-size(len), rest::binary>>) do
+    option = Option.from_binary(<<code::16, len::16, data::binary-size(len)>>)
+    [option | parse_options(rest)]
+  end
+
+  defimpl DNS.Parameter, for: DNS.Message.EDNS0 do
+    @impl true
+    def to_binary(%DNS.Message.EDNS0{
+          udp_payload: udp_payload,
+          extended_rcode: extended_rcode,
+          version: version,
+          do_bit: do_bit,
+          flags: flags,
+          options: options
+        }) do
+      options_binary = options |> Enum.map(&DNS.to_binary/1) |> Enum.join(<<>>)
+
+      <<0::8, 41::16, udp_payload::16, extended_rcode::8, version::8, do_bit::1, flags::15,
+        byte_size(options_binary)::16, options_binary::binary>>
     end
-  end
-
-  defp seek_option(data, options \\ [])
-
-  defp seek_option(<<code::16, length::16, data::binary>>, options) do
-    <<opt_data::binary-size(length), next_data::binary>> = data
-    parsed_data = Option.parse(code, opt_data)
-    options = [{code, parsed_data} | options]
-
-    if byte_size(next_data) > 0 do
-      seek_option(next_data, options)
-    else
-      options
-    end
-  end
-
-  defp seek_option(_, _) do
-    throw({:edns_option_error})
-  end
-
-  defp encode_options(options) do
-    opt_binary =
-      for {code, value} <- options do
-        parsed_value = Option.encode(code, value)
-        <<code::16, byte_size(parsed_value)::16, parsed_value::binary>>
-      end
-      |> Enum.join(<<>>)
-
-    <<byte_size(opt_binary)::16, opt_binary::binary>>
   end
 
   defimpl String.Chars, for: DNS.Message.EDNS0 do
-    def to_string(edns0 = %DNS.Message.EDNS0{}) do
-      DNS.Message.EDNS0.to_print(edns0)
-      opt_str = edns0.options |> Enum.map(fn opt -> Option.to_print(opt) end) |> Enum.join("\n")
+    def to_string(%DNS.Message.EDNS0{
+          udp_payload: udp_payload,
+          # extended_rcode: extended_rcode,
+          version: version,
+          do_bit: do_bit,
+          # flags: flags,
+          options: options
+        }) do
+      opt_str = options |> Enum.join("\n")
 
       """
-      ; EDNS: version: #{edns0.version}, flags: #{if(edns0.do_bit == 1, do: "DO")} udp: #{edns0.udp_payload}#{if(length(edns0.options) > 0, do: "\n#{opt_str}")}
+      ; EDNS: version: #{version}, flags: #{if(do_bit == 1, do: "DO")} udp: #{udp_payload}#{if(length(options) > 0, do: "\n#{opt_str}")}
       """
     end
   end
