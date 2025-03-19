@@ -33,9 +33,9 @@ defmodule DNS.Message.Record.Data.MX do
 
   defimpl DNS.Parameter, for: DNS.Message.Record.Data.MX do
     @impl true
-    def to_binary(%DNS.Message.Record.Data.MX{} = data) do
-      data = DNS.to_binary(data.data)
-      <<data.rdlength::16, data::binary>>
+    def to_binary(%DNS.Message.Record.Data.MX{data: {weight, domain}}) do
+      data = DNS.to_binary(domain)
+      <<byte_size(data) + 2::16, weight::16, data::binary>>
     end
   end
 

@@ -33,7 +33,7 @@ defmodule DNS.Message.Record.Data.SRV do
   defimpl DNS.Parameter, for: DNS.Message.Record.Data.SRV do
     @impl true
     def to_binary(%DNS.Message.Record.Data.SRV{raw: raw}) do
-      raw
+      <<byte_size(raw)::16, raw::binary>>
     end
   end
 

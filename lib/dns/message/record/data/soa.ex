@@ -44,8 +44,11 @@ defmodule DNS.Message.Record.Data.SOA do
     @impl true
     def to_binary(%DNS.Message.Record.Data.SOA{data: data}) do
       {ns, rp, serial, refresh, retry, expire, negative} = data
+      ns_binary = DNS.to_binary(ns)
+      rp_binary = DNS.to_binary(rp)
+      size = byte_size(ns_binary) + byte_size(rp_binary) + 20
 
-      <<DNS.to_binary(ns)::binary, DNS.to_binary(rp)::binary, serial::32, refresh::32, retry::32,
+      <<size::16, ns_binary::binary, rp_binary::binary, serial::32, refresh::32, retry::32,
         expire::32, negative::32>>
     end
   end

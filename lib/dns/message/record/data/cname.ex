@@ -23,9 +23,9 @@ defmodule DNS.Message.Record.Data.CNAME do
 
   defimpl DNS.Parameter, for: DNS.Message.Record.Data.CNAME do
     @impl true
-    def to_binary(%DNS.Message.Record.Data.CNAME{} = data) do
-      data = DNS.to_binary(data.data)
-      <<data.rdlength::16, data::binary>>
+    def to_binary(%DNS.Message.Record.Data.CNAME{data: data}) do
+      data = DNS.to_binary(data)
+      <<byte_size(data)::16, data::binary>>
     end
   end
 
