@@ -110,11 +110,13 @@ defmodule DNS.Message do
 
       otp = message.arlist |> Enum.find(fn record -> record.type == RRType.new(41) end)
       arlist = message.arlist |> Enum.filter(fn record -> record.type != RRType.new(41) end)
-      edns0 = if !is_nil(otp) do
-        otp
-        |> DNS.to_binary()
-        |> DNS.Message.EDNS0.from_binary()
-      end
+
+      edns0 =
+        if !is_nil(otp) do
+          otp
+          |> DNS.to_binary()
+          |> DNS.Message.EDNS0.from_binary()
+        end
 
       arlist_str =
         if length(arlist) > 0 do
