@@ -40,7 +40,10 @@ defmodule DNS.Message.EDNS0.Option do
   defstruct code: 0, data: nil
 
   def new(code, data) do
-    {code, data}
+    %__MODULE__{code: code, data: data}
+  end
+
+  def from_binary(<<code::16, length::16, payload::binary>>) do
   end
 
   @doc """
