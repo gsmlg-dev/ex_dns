@@ -66,9 +66,9 @@ defmodule DNS.Message.RCode do
   """
   alias DNS.Message.RCode
 
-  @type t :: %__MODULE__{value: <<_::4>>}
+  defstruct value: nil, extended: <<0::8>>
 
-  defstruct value: <<0::4>>, extended: <<0::8>>
+  @type t :: %__MODULE__{value: <<_::4>>, extended: <<_::8>>}
 
   def new(value) when is_integer(value), do: new(<<value::4>>)
 

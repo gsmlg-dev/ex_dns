@@ -166,7 +166,7 @@ defmodule DNS.Message.Header do
 
   defstruct id: nil,
             qr: nil,
-            opcode: OpCode.new(0),
+            opcode: nil,
             aa: nil,
             tc: nil,
             rd: nil,

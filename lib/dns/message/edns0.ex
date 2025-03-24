@@ -182,7 +182,7 @@ defmodule DNS.Message.EDNS0 do
   end
 
   def add_option(edns0 = %__MODULE__{options: options}, option) do
-    %EDNS0{edns0 | options: [option | options]}
+    %{edns0 | options: [option | options]}
   end
 
   defp parse_options(<<>>) do
