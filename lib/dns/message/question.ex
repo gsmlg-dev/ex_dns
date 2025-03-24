@@ -48,7 +48,7 @@ defmodule DNS.Message.Question do
     list |> Enum.map(&DNS.to_binary/1) |> Enum.join(<<>>)
   end
 
-  @spec list_from_message(binary()) :: {non_neg_integer(), list()}
+  @spec list_from_message(binary()) :: {list(), non_neg_integer()}
   def list_from_message(<<header::binary-size(12), _::binary>> = message) do
     list_from_message(message, Header.qdcount(header))
   end
@@ -57,7 +57,7 @@ defmodule DNS.Message.Question do
     throw({:format_error, :question, message})
   end
 
-  @spec list_from_message(binary(), non_neg_integer()) :: {non_neg_integer(), list()}
+  @spec list_from_message(binary(), non_neg_integer()) :: {list(), non_neg_integer()}
   def list_from_message(<<_::binary-size(12), _::binary>> = _message, 0) do
     {[], 0}
   end
