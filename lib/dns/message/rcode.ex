@@ -81,6 +81,13 @@ defmodule DNS.Message.RCode do
 
   def extend(rcode = %RCode{}, extended), do: %{rcode | extended: extended}
 
+  defimpl DNS.Parameter, for: DNS.Message.RCode do
+    @impl true
+    def to_binary(%DNS.Message.RCode{value: value}) do
+      value
+    end
+  end
+
   defimpl String.Chars, for: DNS.Message.RCode do
     @impl true
     @spec to_string(DNS.Message.RCode.t()) :: binary()

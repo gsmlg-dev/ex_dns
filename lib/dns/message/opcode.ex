@@ -74,6 +74,13 @@ defmodule DNS.Message.OpCode do
   @spec dso() :: 6
   def dso(), do: 6
 
+  defimpl DNS.Parameter, for: DNS.Message.OpCode do
+    @impl true
+    def to_binary(%DNS.Message.OpCode{value: value}) do
+      value
+    end
+  end
+
   defimpl String.Chars, for: DNS.Message.OpCode do
     @impl true
     @spec to_string(DNS.Message.OpCode.t()) :: binary()

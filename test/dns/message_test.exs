@@ -91,4 +91,16 @@ defmodule DNS.MessageTest do
 
     # IO.puts("#{to_string(msg)}")
   end
+
+  test "DNS message protocol DNS.to_binary/1" do
+    raw1 =
+      <<0, 0, 132, 0, 0, 0, 0, 1, 0, 0, 0, 0, 12, 49, 48, 45, 49, 48, 48, 45, 49, 48, 45, 53, 50,
+        5, 108, 111, 99, 97, 108, 0, 0, 1, 128, 1, 0, 0, 14, 16, 0, 4, 10, 100, 10, 52>>
+
+    msg = Message.from_binary(raw1)
+
+    iodata = DNS.to_binary(msg)
+
+    assert raw1 == iodata
+  end
 end

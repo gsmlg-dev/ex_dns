@@ -235,9 +235,10 @@ defmodule DNS.Message.Header do
   defimpl DNS.Parameter, for: DNS.Message.Header do
     @impl true
     def to_binary(%DNS.Message.Header{} = header) do
-      <<header.id::16, header.qr::1, header.opcode::4, header.aa::1, header.tc::1, header.rd::1,
-        header.ra::1, header.z::1, header.ad::1, header.cd::1, header.rcode::4,
-        header.qdcount::16, header.ancount::16, header.nscount::16, header.arcount::16>>
+      <<header.id::16, header.qr::1, header.opcode.value::bitstring, header.aa::1, header.tc::1,
+        header.rd::1, header.ra::1, header.z::1, header.ad::1, header.cd::1,
+        header.rcode.value::bitstring, header.qdcount::16, header.ancount::16, header.nscount::16,
+        header.arcount::16>>
     end
   end
 

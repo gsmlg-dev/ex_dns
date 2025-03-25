@@ -92,6 +92,14 @@ defmodule DNS.Message do
     }
   end
 
+  defimpl DNS.Parameter, for: DNS.Message do
+    @impl true
+    def to_binary(%DNS.Message{header: header, qdlist: qdlist, anlist: anlist, arlist: arlist}) do
+      <<DNS.to_binary(header)::binary, DNS.to_binary(qdlist)::binary,
+        DNS.to_binary(anlist)::binary, DNS.to_binary(arlist)::binary>>
+    end
+  end
+
   defimpl String.Chars, for: DNS.Message do
     def to_string(message) do
       anlist_str =
