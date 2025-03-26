@@ -110,7 +110,7 @@ defmodule DNS.Message.Record do
         <<_::binary-size(offset), buffer::binary>> = message
         record = from_binary(buffer, message)
 
-        {[record | records], offset + record.name.size + 2 + 2 + 4 + 2 + record.data.rdlength}
+        {[record | records], offset + record.name.size + 2 + 2 + 4 + 2 + record.rdlength}
       end)
 
     {record_list, end_offset}
