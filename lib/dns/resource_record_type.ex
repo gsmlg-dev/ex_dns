@@ -139,7 +139,7 @@ defmodule DNS.ResourceRecordType do
 
   defimpl DNS.Parameter, for: DNS.ResourceRecordType do
     @impl true
-    def to_binary(%DNS.ResourceRecordType{value: <<value::16>>}) do
+    def to_iodata(%DNS.ResourceRecordType{value: <<value::16>>}) do
       <<value::16>>
     end
   end

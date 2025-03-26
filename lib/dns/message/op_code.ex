@@ -76,7 +76,7 @@ defmodule DNS.Message.OpCode do
 
   defimpl DNS.Parameter, for: DNS.Message.OpCode do
     @impl true
-    def to_binary(%DNS.Message.OpCode{value: value}) do
+    def to_iodata(%DNS.Message.OpCode{value: value}) do
       value
     end
   end

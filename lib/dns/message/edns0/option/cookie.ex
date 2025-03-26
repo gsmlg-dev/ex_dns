@@ -64,11 +64,11 @@ defmodule DNS.Message.EDNS0.Option.Cookie do
     %__MODULE__{data: {client_cookie, server_cookie}}
   end
 
-  def from_binary(<<10::16, 8::16, client_cookie::binary-size(8)>>) do
+  def from_iodata(<<10::16, 8::16, client_cookie::binary-size(8)>>) do
     %__MODULE__{length: 8, data: {client_cookie, nil}}
   end
 
-  def from_binary(
+  def from_iodata(
         <<10::16, len::16, client_cookie::binary-size(8), server_cookie::binary-size(len - 8)>>
       )
       when len >= 16 and len <= 40 do
@@ -77,13 +77,13 @@ defmodule DNS.Message.EDNS0.Option.Cookie do
 
   defimpl DNS.Parameter, for: DNS.Message.EDNS0.Option.Cookie do
     @impl true
-    def to_binary(%DNS.Message.EDNS0.Option.Cookie{
+    def to_iodata(%DNS.Message.EDNS0.Option.Cookie{
           data: {{client_cookie, nil}}
         }) do
       <<10::16, 8::16, client_cookie::binary-size(8)>>
     end
 
-    def to_binary(%DNS.Message.EDNS0.Option.Cookie{
+    def to_iodata(%DNS.Message.EDNS0.Option.Cookie{
           data: {client_cookie, server_cookie}
         }) do
       s_size = byte_size(server_cookie)

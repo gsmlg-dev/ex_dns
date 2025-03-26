@@ -81,8 +81,8 @@ defmodule DNS.Message.Record do
     %__MODULE__{name: domain, type: rtype, class: rclass, ttl: ttl, data: RData.new(rtype, data)}
   end
 
-  def from_binary(buffer, message \\ <<>>) do
-    with domain <- Domain.from_binary(buffer, message),
+  def from_iodata(buffer, message \\ <<>>) do
+    with domain <- Domain.from_iodata(buffer, message),
          <<_::binary-size(domain.size), type::16, class::16, ttl::32, rdlength::16, rest::binary>> <-
            buffer,
          <<rdata::binary-size(rdlength), _::binary>> <- rest do
@@ -94,7 +94,7 @@ defmodule DNS.Message.Record do
         class: Class.new(class),
         ttl: ttl,
         rdlength: rdlength,
-        data: RData.from_binary(type, rdata, message)
+        data: RData.from_iodata(type, rdata, message)
       }
     else
       error ->
@@ -108,7 +108,7 @@ defmodule DNS.Message.Record do
     {record_list, end_offset} =
       Enum.reduce(1..count, {[], offset}, fn _, {records, offset} ->
         <<_::binary-size(offset), buffer::binary>> = message
-        record = from_binary(buffer, message)
+        record = from_iodata(buffer, message)
 
         {[record | records], offset + record.name.size + 2 + 2 + 4 + 2 + record.data.rdlength}
       end)
@@ -118,11 +118,11 @@ defmodule DNS.Message.Record do
 
   defimpl DNS.Parameter, for: DNS.Message.Record do
     @impl true
-    def to_binary(%DNS.Message.Record{} = record) do
-      DNS.to_binary(record.name) <>
-        DNS.to_binary(record.type) <>
-        DNS.to_binary(record.class) <>
-        <<record.ttl::32>> <> DNS.to_binary(record.data)
+    def to_iodata(%DNS.Message.Record{} = record) do
+      DNS.to_iodata(record.name) <>
+        DNS.to_iodata(record.type) <>
+        DNS.to_iodata(record.class) <>
+        <<record.ttl::32>> <> DNS.to_iodata(record.data)
     end
   end
 

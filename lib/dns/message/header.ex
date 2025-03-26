@@ -204,7 +204,7 @@ defmodule DNS.Message.Header do
   end
 
   @doc false
-  def from_binary(
+  def from_iodata(
         <<id::16, qr::1, opcode::4, aa::1, tc::1, rd::1, ra::1, z::1, ad::1, cd::1, rcode::4,
           qdcount::16, ancount::16, nscount::16, arcount::16, _::binary>> = _buffer
       ) do
@@ -234,7 +234,7 @@ defmodule DNS.Message.Header do
 
   defimpl DNS.Parameter, for: DNS.Message.Header do
     @impl true
-    def to_binary(%DNS.Message.Header{} = header) do
+    def to_iodata(%DNS.Message.Header{} = header) do
       <<header.id::16, header.qr::1, header.opcode.value::bitstring, header.aa::1, header.tc::1,
         header.rd::1, header.ra::1, header.z::1, header.ad::1, header.cd::1,
         header.rcode.value::bitstring, header.qdcount::16, header.ancount::16, header.nscount::16,

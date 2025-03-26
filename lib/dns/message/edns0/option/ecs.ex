@@ -34,7 +34,7 @@ defmodule DNS.Message.EDNS0.Option.ECS do
     %__MODULE__{length: len, data: {client_subnet, source_prefix, scope_prefix}}
   end
 
-  def from_binary(<<8::16, length::16, payload::binary-size(length)>>) do
+  def from_iodata(<<8::16, length::16, payload::binary-size(length)>>) do
     {client_subnet, source_prefix, scope_prefix} = parse_raw(payload)
 
     %__MODULE__{length: length, data: {client_subnet, source_prefix, scope_prefix}}
@@ -217,7 +217,7 @@ defmodule DNS.Message.EDNS0.Option.ECS do
 
   defimpl DNS.Parameter, for: DNS.Message.EDNS0.Option.ECS do
     @impl true
-    def to_binary(%DNS.Message.EDNS0.Option.ECS{
+    def to_iodata(%DNS.Message.EDNS0.Option.ECS{
           data: {client_subnet, source_prefix, scope_prefix}
         }) do
       raw = DNS.Message.EDNS0.Option.ECS.to_raw({client_subnet, source_prefix, scope_prefix})

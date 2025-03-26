@@ -12,7 +12,7 @@ defmodule DNS.Message.Record.Data.MX do
 
   def new({weight, str}) do
     domain = Domain.new(str)
-    raw = DNS.to_binary(domain)
+    raw = DNS.to_iodata(domain)
 
     %__MODULE__{
       raw: <<weight::16, raw::binary>>,
@@ -21,11 +21,11 @@ defmodule DNS.Message.Record.Data.MX do
     }
   end
 
-  def from_binary(<<weight::16, data::binary>>, message \\ nil) do
-    domain = Domain.from_binary(data, message)
+  def from_iodata(<<weight::16, data::binary>>, message \\ nil) do
+    domain = Domain.from_iodata(data, message)
 
     %__MODULE__{
-      raw: <<weight::16, DNS.to_binary(domain)::binary>>,
+      raw: <<weight::16, DNS.to_iodata(domain)::binary>>,
       data: {weight, domain},
       rdlength: byte_size(data) + 2
     }
@@ -33,8 +33,8 @@ defmodule DNS.Message.Record.Data.MX do
 
   defimpl DNS.Parameter, for: DNS.Message.Record.Data.MX do
     @impl true
-    def to_binary(%DNS.Message.Record.Data.MX{data: {weight, domain}}) do
-      data = DNS.to_binary(domain)
+    def to_iodata(%DNS.Message.Record.Data.MX{data: {weight, domain}}) do
+      data = DNS.to_iodata(domain)
       <<byte_size(data) + 2::16, weight::16, data::binary>>
     end
   end

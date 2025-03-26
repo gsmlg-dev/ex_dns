@@ -50,7 +50,7 @@ defmodule DNS.Message.EDNS0.OptionCode do
 
   defimpl DNS.Parameter, for: OptionCode do
     @impl true
-    def to_binary(%OptionCode{value: <<value::16>>}) do
+    def to_iodata(%OptionCode{value: <<value::16>>}) do
       <<value::16>>
     end
   end

@@ -32,9 +32,9 @@ defmodule DNS.Message.Question do
     }
   end
 
-  @spec from_binary(<<_::_*8>>, <<_::_*8>>) :: Question.t()
-  def from_binary(buffer, message \\ <<>>) do
-    with domain <- Domain.from_binary(buffer, message),
+  @spec from_iodata(<<_::_*8>>, <<_::_*8>>) :: Question.t()
+  def from_iodata(buffer, message \\ <<>>) do
+    with domain <- Domain.from_iodata(buffer, message),
          <<_::binary-size(domain.size), type::16, class::16, _::binary>> <- buffer do
       %__MODULE__{name: domain, type: RRType.new(<<type::16>>), class: Class.new(<<class::16>>)}
     else
@@ -43,9 +43,9 @@ defmodule DNS.Message.Question do
     end
   end
 
-  @spec list_to_binary([Question.t()]) :: binary()
-  def list_to_binary(list) when is_list(list) do
-    list |> Enum.map(&DNS.to_binary/1) |> Enum.join(<<>>)
+  @spec list_to_iodata([Question.t()]) :: binary()
+  def list_to_iodata(list) when is_list(list) do
+    list |> Enum.map(&DNS.to_iodata/1) |> Enum.join(<<>>)
   end
 
   @spec list_from_message(binary()) :: {list(), non_neg_integer()}
@@ -67,7 +67,7 @@ defmodule DNS.Message.Question do
     {size, questions} =
       Enum.reduce(1..qdcount, {0, []}, fn _, {all_size, questions} ->
         question =
-          from_binary(binary_part(buffer, all_size, byte_size(buffer) - all_size), message)
+          from_iodata(binary_part(buffer, all_size, byte_size(buffer) - all_size), message)
 
         {all_size + question.name.size + 4, [question | questions]}
       end)
@@ -81,9 +81,9 @@ defmodule DNS.Message.Question do
 
   defimpl DNS.Parameter, for: DNS.Message.Question do
     @impl true
-    def to_binary(%DNS.Message.Question{} = question) do
-      DNS.to_binary(question.name) <>
-        DNS.to_binary(question.type) <> DNS.to_binary(question.class)
+    def to_iodata(%DNS.Message.Question{} = question) do
+      DNS.to_iodata(question.name) <>
+        DNS.to_iodata(question.type) <> DNS.to_iodata(question.class)
     end
   end
 
