@@ -104,14 +104,14 @@ defmodule DNS.Message do
     def to_string(message) do
       anlist_str =
         if length(message.anlist) > 0 do
-          "\n;; ANSWER SECTION\n#{message.anlist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
+          "\n\n;; ANSWER SECTION\n#{message.anlist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
         else
           ""
         end
 
       nslist_str =
         if length(message.nslist) > 0 do
-          "\n;; AUTHORITY SECTION\n#{message.nslist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
+          "\n\n;; AUTHORITY SECTION\n#{message.nslist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
         else
           ""
         end
@@ -128,7 +128,7 @@ defmodule DNS.Message do
 
       arlist_str =
         if length(arlist) > 0 do
-          "\n;; ADDITIONAL SECTION\n#{arlist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
+          "\n\n;; ADDITIONAL SECTION\n#{arlist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
         else
           ""
         end
@@ -137,8 +137,7 @@ defmodule DNS.Message do
       ;; HEADER SECTION
       #{message.header}
       ;; QUESTION SECTION
-      #{message.qdlist |> Enum.join("\n")}#{if(!is_nil(edns0), do: "\n#{edns0}", else: "")}
-      #{anlist_str}#{nslist_str}#{arlist_str}
+      #{message.qdlist |> Enum.join("\n")}#{if(!is_nil(edns0), do: "\n#{edns0}", else: "")}#{anlist_str}#{nslist_str}#{arlist_str}
       """
     end
   end

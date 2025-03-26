@@ -78,7 +78,16 @@ defmodule DNS.Message.Record do
     domain = Domain.new(name)
     rtype = RRType.new(type)
     rclass = Class.new(class)
-    %__MODULE__{name: domain, type: rtype, class: rclass, ttl: ttl, data: RData.new(rtype, data)}
+    rdata = RData.new(rtype, data)
+
+    %__MODULE__{
+      name: domain,
+      type: rtype,
+      class: rclass,
+      ttl: ttl,
+      rdlength: rdata.rdlength,
+      data: rdata
+    }
   end
 
   def from_iodata(buffer, message \\ <<>>) do
@@ -110,7 +119,7 @@ defmodule DNS.Message.Record do
         <<_::binary-size(offset), buffer::binary>> = message
         record = from_iodata(buffer, message)
 
-        {[record | records], offset + record.name.size + 2 + 2 + 4 + 2 + record.data.rdlength}
+        {[record | records], offset + record.name.size + 2 + 2 + 4 + 2 + record.rdlength}
       end)
 
     {record_list, end_offset}
