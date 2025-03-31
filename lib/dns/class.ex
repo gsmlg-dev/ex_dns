@@ -59,9 +59,20 @@ defmodule DNS.Class do
   @doc """
   # Create a new Class struct
   """
-  @spec new(<<_::16>> | integer()) :: Class.t()
+  @spec new(<<_::16>> | integer() | atom()) :: Class.t()
   def new(value) when is_integer(value) do
     %Class{value: <<value::16>>}
+  end
+
+  def new(value) when is_atom(value) do
+    case value do
+      :in -> new(1)
+      :ch -> new(3)
+      :hs -> new(4)
+      :none -> new(254)
+      :any -> new(255)
+      _ -> throw("Unsupported atom class: #{value}")
+    end
   end
 
   def new(value) do

@@ -130,8 +130,24 @@ defmodule DNS.ResourceRecordType do
   @doc """
   # Create a new Class struct
   """
-  @spec new(<<_::16>> | integer()) :: ResourceRecordType.t()
+  @spec new(<<_::16>> | integer() | atom()) :: ResourceRecordType.t()
   def new(value) when is_integer(value), do: new(<<value::16>>)
+
+  def new(value) when is_atom(value) do
+    case value do
+      :a -> new(1)
+      :ns -> new(2)
+      :cname -> new(5)
+      :soa -> new(6)
+      :ptr -> new(12)
+      :mx -> new(15)
+      :txt -> new(16)
+      :aaaa -> new(28)
+      :srv -> new(33)
+      :nsec -> new(47)
+      _ -> throw("Unsupported atom RRType: #{value}")
+    end
+  end
 
   def new(value) do
     %ResourceRecordType{value: value}
