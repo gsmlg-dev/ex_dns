@@ -19,6 +19,6 @@ defmodule DNS.Message.Record.Data.SOATest do
 
     data = DNS.Message.Record.Data.SOA.new(soa)
 
-    assert "#{data}" == "ns.gsmlg.com admin.gsmlg.com 2367333983 10000 2400 604800 1800"
+    assert "#{data}" == "ns.gsmlg.com. admin.gsmlg.com. 2367333983 10000 2400 604800 1800"
   end
 end

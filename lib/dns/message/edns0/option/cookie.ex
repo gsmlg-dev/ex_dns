@@ -1,6 +1,6 @@
 defmodule DNS.Message.EDNS0.Option.Cookie do
   @moduledoc """
-  # DNS COOKIE Option
+  EDNS0.Option.Cookie
 
   The DNS COOKIE option is an OPT RR [RFC6891] option that can be
   included in the RDATA portion of an OPT RR in DNS requests and
@@ -60,8 +60,16 @@ defmodule DNS.Message.EDNS0.Option.Cookie do
 
   defstruct code: OptionCode.new(10), length: nil, data: nil
 
+  @spec new({binary(), binary() | nil}) :: t()
   def new({client_cookie, server_cookie}) do
-    %__MODULE__{data: {client_cookie, server_cookie}}
+    len =
+      if is_nil(server_cookie) do
+        8
+      else
+        8 + byte_size(server_cookie)
+      end
+
+    %__MODULE__{length: len, data: {client_cookie, server_cookie}}
   end
 
   def from_iodata(<<10::16, 8::16, client_cookie::binary-size(8)>>) do
@@ -78,7 +86,7 @@ defmodule DNS.Message.EDNS0.Option.Cookie do
   defimpl DNS.Parameter, for: DNS.Message.EDNS0.Option.Cookie do
     @impl true
     def to_iodata(%DNS.Message.EDNS0.Option.Cookie{
-          data: {{client_cookie, nil}}
+          data: {client_cookie, nil}
         }) do
       <<10::16, 8::16, client_cookie::binary-size(8)>>
     end

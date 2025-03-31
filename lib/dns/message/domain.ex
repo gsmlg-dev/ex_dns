@@ -22,6 +22,11 @@ defmodule DNS.Message.Domain do
 
   @spec new(binary()) :: Domain.t()
   def new(value) do
+    value = if String.last(value) == "." do
+      value
+    else
+      value <> "."
+    end
     %Domain{
       value: value,
       size: domain_byte_size(value)

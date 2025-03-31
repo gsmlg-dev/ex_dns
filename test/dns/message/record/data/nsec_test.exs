@@ -23,6 +23,6 @@ defmodule DNS.Message.Record.Data.NSECTest do
 
     data = DNS.Message.Record.Data.NSEC.new(nsec)
 
-    assert "#{data}" == "admin.gsmlg.com A TXT SRV"
+    assert "#{data}" == "admin.gsmlg.com. A TXT SRV"
   end
 end

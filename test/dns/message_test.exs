@@ -127,7 +127,7 @@ defmodule DNS.MessageTest do
     assert length(msg.anlist) == 1
     assert length(msg.nslist) == 8
     assert length(msg.arlist) == 12
-    IO.puts(msg)
+    # IO.puts(msg)
   end
 
   test "DNS message protocol DNS.to_iodata/1" do
