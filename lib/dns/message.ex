@@ -70,8 +70,8 @@ defmodule DNS.Message do
     }
   end
 
-  def from_binary(<<header_bytes::binary-size(12), _::binary>> = message) do
-    header = Header.from_binary(header_bytes)
+  def from_iodata(<<header_bytes::binary-size(12), _::binary>> = message) do
+    header = Header.from_iodata(header_bytes)
 
     {qdlist, qd_size} = Question.list_from_message(message, header.qdcount)
 
@@ -94,9 +94,9 @@ defmodule DNS.Message do
 
   defimpl DNS.Parameter, for: DNS.Message do
     @impl true
-    def to_binary(%DNS.Message{header: header, qdlist: qdlist, anlist: anlist, arlist: arlist}) do
-      <<DNS.to_binary(header)::binary, DNS.to_binary(qdlist)::binary,
-        DNS.to_binary(anlist)::binary, DNS.to_binary(arlist)::binary>>
+    def to_iodata(%DNS.Message{header: header, qdlist: qdlist, anlist: anlist, arlist: arlist}) do
+      <<DNS.to_iodata(header)::binary, DNS.to_iodata(qdlist)::binary,
+        DNS.to_iodata(anlist)::binary, DNS.to_iodata(arlist)::binary>>
     end
   end
 
@@ -104,14 +104,14 @@ defmodule DNS.Message do
     def to_string(message) do
       anlist_str =
         if length(message.anlist) > 0 do
-          "\n;; ANSWER SECTION\n#{message.anlist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
+          "\n\n;; ANSWER SECTION\n#{message.anlist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
         else
           ""
         end
 
       nslist_str =
         if length(message.nslist) > 0 do
-          "\n;; AUTHORITY SECTION\n#{message.nslist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
+          "\n\n;; AUTHORITY SECTION\n#{message.nslist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
         else
           ""
         end
@@ -122,13 +122,13 @@ defmodule DNS.Message do
       edns0 =
         if !is_nil(otp) do
           otp
-          |> DNS.to_binary()
-          |> DNS.Message.EDNS0.from_binary()
+          |> DNS.to_iodata()
+          |> DNS.Message.EDNS0.from_iodata()
         end
 
       arlist_str =
         if length(arlist) > 0 do
-          "\n;; ADDITIONAL SECTION\n#{arlist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
+          "\n\n;; ADDITIONAL SECTION\n#{arlist |> Enum.map(&Kernel.to_string/1) |> Enum.join("\n")}"
         else
           ""
         end
@@ -137,8 +137,7 @@ defmodule DNS.Message do
       ;; HEADER SECTION
       #{message.header}
       ;; QUESTION SECTION
-      #{message.qdlist |> Enum.join("\n")}#{if(!is_nil(edns0), do: "\n#{edns0}", else: "")}
-      #{anlist_str}#{nslist_str}#{arlist_str}
+      #{message.qdlist |> Enum.join("\n")}#{if(!is_nil(edns0), do: "\n#{edns0}", else: "")}#{anlist_str}#{nslist_str}#{arlist_str}
       """
     end
   end

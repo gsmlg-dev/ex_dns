@@ -22,17 +22,17 @@ defmodule DNS.Message.EDNS0.Option do
     end
   end
 
-  def from_binary(<<code::16, length::16, payload::binary-size(length)>> = raw) do
+  def from_iodata(<<code::16, length::16, payload::binary-size(length)>> = raw) do
     case code do
-      8 -> Option.ECS.from_binary(raw)
-      10 -> Option.Cookie.from_binary(raw)
+      8 -> Option.ECS.from_iodata(raw)
+      10 -> Option.Cookie.from_iodata(raw)
       _ -> %__MODULE__{code: OptionCode.new(code), data: payload}
     end
   end
 
   defimpl DNS.Parameter, for: DNS.Message.EDNS0.Option do
     @impl true
-    def to_binary(%DNS.Message.EDNS0.Option{
+    def to_iodata(%DNS.Message.EDNS0.Option{
           data: data
         }) do
       <<10::16, byte_size(data)::16, data::binary>>

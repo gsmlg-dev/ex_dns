@@ -22,6 +22,13 @@ defmodule DNS.Message.Domain do
 
   @spec new(binary()) :: Domain.t()
   def new(value) do
+    value =
+      if String.last(value) == "." do
+        value
+      else
+        value <> "."
+      end
+
     %Domain{
       value: value,
       size: domain_byte_size(value)
@@ -31,7 +38,7 @@ defmodule DNS.Message.Domain do
   @doc """
   Get name from bitstring, uncompress name in message
   """
-  def from_binary(bitstring, dns_message \\ <<>>) do
+  def from_iodata(bitstring, dns_message \\ <<>>) do
     {len, domain} = parse_domain_from_message(bitstring, dns_message)
     new(domain, len)
   end
@@ -105,7 +112,7 @@ defmodule DNS.Message.Domain do
 
   defimpl DNS.Parameter, for: Domain do
     @impl true
-    def to_binary(%Domain{value: domain}) do
+    def to_iodata(%Domain{value: domain}) do
       case String.split(domain, ".") |> Enum.filter(&(&1 != "")) do
         [] ->
           <<0>>

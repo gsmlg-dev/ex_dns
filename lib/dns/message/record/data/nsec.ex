@@ -13,12 +13,12 @@ defmodule DNS.Message.Record.Data.NSEC do
   def new({str, types}) do
     domain = Domain.new(str)
     rr_types = types |> Enum.map(&DNS.ResourceRecordType.new/1)
-    raw = <<DNS.to_binary(domain)::binary, to_raw(rr_types)::binary>>
+    raw = <<DNS.to_iodata(domain)::binary, to_raw(rr_types)::binary>>
     %__MODULE__{raw: raw, data: {domain, rr_types}, rdlength: byte_size(raw)}
   end
 
-  def from_binary(raw, message) do
-    domain = Domain.from_binary(raw, message)
+  def from_iodata(raw, message) do
+    domain = Domain.from_iodata(raw, message)
     <<_::binary-size(domain.size), rest::binary>> = raw
     data = parse_raw(rest)
     %__MODULE__{raw: raw, data: {domain, data}, rdlength: byte_size(raw)}
@@ -147,7 +147,7 @@ defmodule DNS.Message.Record.Data.NSEC do
 
   defimpl DNS.Parameter, for: DNS.Message.Record.Data.NSEC do
     @impl true
-    def to_binary(%DNS.Message.Record.Data.NSEC{raw: raw, rdlength: rdlength}) do
+    def to_iodata(%DNS.Message.Record.Data.NSEC{raw: raw, rdlength: rdlength}) do
       <<rdlength::16, raw::binary>>
     end
   end

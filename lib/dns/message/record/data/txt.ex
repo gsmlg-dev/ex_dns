@@ -13,7 +13,7 @@ defmodule DNS.Message.Record.Data.TXT do
     %__MODULE__{raw: raw, data: text, rdlength: byte_size(raw)}
   end
 
-  def from_binary(raw, _message \\ nil) do
+  def from_iodata(raw, _message \\ nil) do
     data = parse_raw(raw)
     %__MODULE__{raw: raw, data: data, rdlength: byte_size(raw)}
   end
@@ -27,7 +27,7 @@ defmodule DNS.Message.Record.Data.TXT do
 
   defimpl DNS.Parameter, for: DNS.Message.Record.Data.TXT do
     @impl true
-    def to_binary(%DNS.Message.Record.Data.TXT{raw: raw, rdlength: rdlength}) do
+    def to_iodata(%DNS.Message.Record.Data.TXT{raw: raw, rdlength: rdlength}) do
       <<rdlength::16, raw::binary>>
     end
   end

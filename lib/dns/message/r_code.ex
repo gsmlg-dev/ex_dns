@@ -70,7 +70,7 @@ defmodule DNS.Message.RCode do
 
   @type t :: %__MODULE__{value: <<_::4>>, extended: <<_::8>>}
 
-  def new(value) when is_integer(value), do: new(<<value::4>>)
+  def new(value) when is_integer(value) and value in 0..15, do: new(<<value::4>>)
 
   def new(value) do
     %RCode{value: value}
@@ -83,7 +83,7 @@ defmodule DNS.Message.RCode do
 
   defimpl DNS.Parameter, for: DNS.Message.RCode do
     @impl true
-    def to_binary(%DNS.Message.RCode{value: value}) do
+    def to_iodata(%DNS.Message.RCode{value: value}) do
       value
     end
   end

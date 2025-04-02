@@ -1,21 +1,63 @@
 defmodule DNS.Message.EDNS0.Option.ECS do
   @moduledoc """
-  ## edns-client-subnet
+  EDNS0.Option.ECS [RFC7871](https://datatracker.ietf.org/doc/html/rfc7871)
 
-  Option Code: `8`
+  Option Format
 
-            +0 (MSB)                            +1 (LSB)
-        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+   This protocol uses an EDNS0 [RFC6891] option to include client
+   address information in DNS messages.  The option is structured as
+   follows:
+
+                    +0 (MSB)                            +1 (LSB)
+          +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
       0: |                          OPTION-CODE                          |
-        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+          +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
       2: |                         OPTION-LENGTH                         |
-        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+          +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
       4: |                            FAMILY                             |
-        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+          +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
       6: |     SOURCE PREFIX-LENGTH      |     SCOPE PREFIX-LENGTH       |
-        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+          +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
       8: |                           ADDRESS...                          /
-        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+          +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+   o  (Defined in [RFC6891]) OPTION-CODE, 2 octets, for ECS is 8 (0x00
+      0x08).
+
+   o  (Defined in [RFC6891]) OPTION-LENGTH, 2 octets, contains the
+      length of the payload (everything after OPTION-LENGTH) in octets.
+
+   o  FAMILY, 2 octets, indicates the family of the address contained in
+      the option, using address family codes as assigned by IANA in
+      Address Family Numbers [Address_Family_Numbers].
+
+   The format of the address part depends on the value of FAMILY.  This
+   document only defines the format for FAMILY 1 (IPv4) and FAMILY 2
+   (IPv6), which are as follows:
+
+   o  SOURCE PREFIX-LENGTH, an unsigned octet representing the leftmost
+      number of significant bits of ADDRESS to be used for the lookup.
+      In responses, it mirrors the same value as in the queries.
+
+   o  SCOPE PREFIX-LENGTH, an unsigned octet representing the leftmost
+      number of significant bits of ADDRESS that the response covers.
+      In queries, it MUST be set to 0.
+
+   o  ADDRESS, variable number of octets, contains either an IPv4 or
+      IPv6 address, depending on FAMILY, which MUST be truncated to the
+      number of bits indicated by the SOURCE PREFIX-LENGTH field,
+      padding with 0 bits to pad to the end of the last octet needed.
+
+   o  A server receiving an ECS option that uses either too few or too
+      many ADDRESS octets, or that has non-zero ADDRESS bits set beyond
+      SOURCE PREFIX-LENGTH, SHOULD return FORMERR to reject the packet,
+      as a signal to the software developer making the request to fix
+      their implementation.
+
+   All fields are in network byte order ("big-endian", per [RFC1700],
+   Data Notation).
+
+
   """
   alias DNS.Message.EDNS0.OptionCode
 
@@ -28,13 +70,15 @@ defmodule DNS.Message.EDNS0.Option.ECS do
 
   defstruct code: OptionCode.new(8), length: nil, data: nil
 
+  @spec new({:inet.ip4_address(), 0..32, 0..32}) :: <<_::32, _::_*8>>
+  @spec new({:inet.ip6_address(), 0..128, 0..128}) :: <<_::32, _::_*8>>
   def new({client_subnet, source_prefix, scope_prefix}) do
     raw = to_raw({client_subnet, source_prefix, scope_prefix})
     len = byte_size(raw)
     %__MODULE__{length: len, data: {client_subnet, source_prefix, scope_prefix}}
   end
 
-  def from_binary(<<8::16, length::16, payload::binary-size(length)>>) do
+  def from_iodata(<<8::16, length::16, payload::binary-size(length)>>) do
     {client_subnet, source_prefix, scope_prefix} = parse_raw(payload)
 
     %__MODULE__{length: length, data: {client_subnet, source_prefix, scope_prefix}}
@@ -140,6 +184,8 @@ defmodule DNS.Message.EDNS0.Option.ECS do
     end
   end
 
+  @spec to_raw({:inet.ip4_address(), 0..32, 0..32}) :: <<_::32, _::_*8>>
+  @spec to_raw({:inet.ip6_address(), 0..128, 0..128}) :: <<_::32, _::_*8>>
   def to_raw({client_subnet, source_prefix, scope_prefix}) do
     {family, addr} =
       if :inet.is_ipv4_address(client_subnet) do
@@ -217,7 +263,7 @@ defmodule DNS.Message.EDNS0.Option.ECS do
 
   defimpl DNS.Parameter, for: DNS.Message.EDNS0.Option.ECS do
     @impl true
-    def to_binary(%DNS.Message.EDNS0.Option.ECS{
+    def to_iodata(%DNS.Message.EDNS0.Option.ECS{
           data: {client_subnet, source_prefix, scope_prefix}
         }) do
       raw = DNS.Message.EDNS0.Option.ECS.to_raw({client_subnet, source_prefix, scope_prefix})

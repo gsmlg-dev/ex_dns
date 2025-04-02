@@ -12,19 +12,19 @@ defmodule DNS.Message.Record.Data.NS do
 
   def new(str) do
     domain = Domain.new(str)
-    raw = DNS.to_binary(domain)
+    raw = DNS.to_iodata(domain)
     %__MODULE__{raw: raw, data: domain, rdlength: domain.size}
   end
 
-  def from_binary(raw, message \\ nil) do
-    data = Domain.from_binary(raw, message)
+  def from_iodata(raw, message \\ nil) do
+    data = Domain.from_iodata(raw, message)
     %__MODULE__{raw: raw, data: data}
   end
 
   defimpl DNS.Parameter, for: DNS.Message.Record.Data.NS do
     @impl true
-    def to_binary(%DNS.Message.Record.Data.NS{data: data}) do
-      data = DNS.to_binary(data)
+    def to_iodata(%DNS.Message.Record.Data.NS{data: data}) do
+      data = DNS.to_iodata(data)
       <<byte_size(data)::16, data::binary>>
     end
   end

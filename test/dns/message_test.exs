@@ -8,13 +8,13 @@ defmodule DNS.MessageTest do
   alias DNS.ResourceRecordType, as: RRType
   alias DNS.Class
 
-  test "DNS message query with cookie from_binary/1" do
+  test "DNS message query with cookie from_iodata/1" do
     raw =
       <<118, 11, 1, 32, 0, 1, 0, 0, 0, 0, 0, 1, 3, 119, 119, 119, 6, 103, 111, 111, 103, 108, 101,
         3, 99, 111, 109, 0, 0, 1, 0, 1, 0, 0, 41, 4, 208, 0, 0, 0, 0, 0, 12, 0, 10, 0, 8, 210,
         213, 222, 136, 249, 150, 28, 88>>
 
-    msg = Message.from_binary(raw)
+    msg = Message.from_iodata(raw)
 
     [qd] = msg.qdlist
     [opt | _] = msg.arlist
@@ -26,7 +26,7 @@ defmodule DNS.MessageTest do
     assert opt.name == Domain.new(".")
     assert opt.type == RRType.new(41)
 
-    edns0 = DNS.Message.EDNS0.from_binary(DNS.to_binary(opt))
+    edns0 = DNS.Message.EDNS0.from_iodata(DNS.to_iodata(opt))
 
     assert edns0.version == 0
     assert edns0.udp_payload == 1232
@@ -38,12 +38,12 @@ defmodule DNS.MessageTest do
     # IO.puts("#{to_string(msg)}")
   end
 
-  test "DNS message mdns response from_binary/1" do
+  test "DNS message mdns response from_iodata/1" do
     raw1 =
       <<0, 0, 132, 0, 0, 0, 0, 1, 0, 0, 0, 0, 12, 49, 48, 45, 49, 48, 48, 45, 49, 48, 45, 53, 50,
         5, 108, 111, 99, 97, 108, 0, 0, 1, 128, 1, 0, 0, 14, 16, 0, 4, 10, 100, 10, 52>>
 
-    msg = Message.from_binary(raw1)
+    msg = Message.from_iodata(raw1)
 
     [an | _rest] = msg.anlist
 
@@ -70,7 +70,7 @@ defmodule DNS.MessageTest do
         4, 118, 118, 61, 48, 192, 12, 0, 47, 128, 1, 0, 0, 17, 148, 0, 9, 192, 12, 0, 5, 0, 0,
         128, 0, 64>>
 
-    msg = Message.from_binary(raw2)
+    msg = Message.from_iodata(raw2)
 
     [an1 | _] = msg.anlist
     [an2 | _] = msg.arlist
@@ -92,14 +92,52 @@ defmodule DNS.MessageTest do
     # IO.puts("#{to_string(msg)}")
   end
 
-  test "DNS message protocol DNS.to_binary/1" do
+  test "DNS message [z.cn] large nslist from_iodata/1" do
+    raw =
+      <<44, 76, 129, 128, 0, 1, 0, 1, 0, 8, 0, 12, 1, 122, 2, 99, 110, 0, 0, 1, 0, 1, 192, 12, 0,
+        1, 0, 1, 0, 0, 1, 213, 0, 4, 54, 222, 60, 252, 192, 12, 0, 2, 0, 1, 0, 0, 26, 113, 0, 20,
+        3, 110, 115, 50, 10, 97, 109, 122, 110, 100, 110, 115, 45, 99, 110, 3, 110, 101, 116, 0,
+        192, 12, 0, 2, 0, 1, 0, 0, 26, 113, 0, 17, 3, 110, 115, 49, 10, 97, 109, 122, 110, 100,
+        110, 115, 45, 99, 110, 192, 14, 192, 12, 0, 2, 0, 1, 0, 0, 26, 113, 0, 20, 3, 110, 115,
+        49, 10, 97, 109, 122, 110, 100, 110, 115, 45, 99, 110, 3, 99, 111, 109, 0, 192, 12, 0, 2,
+        0, 1, 0, 0, 26, 113, 0, 20, 3, 110, 115, 50, 10, 97, 109, 122, 110, 100, 110, 115, 45, 99,
+        110, 3, 98, 105, 122, 0, 192, 12, 0, 2, 0, 1, 0, 0, 26, 113, 0, 6, 3, 110, 115, 50, 192,
+        86, 192, 12, 0, 2, 0, 1, 0, 0, 26, 113, 0, 6, 3, 110, 115, 50, 192, 115, 192, 12, 0, 2, 0,
+        1, 0, 0, 26, 113, 0, 6, 3, 110, 115, 49, 192, 54, 192, 12, 0, 2, 0, 1, 0, 0, 26, 113, 0,
+        6, 3, 110, 115, 49, 192, 147, 192, 82, 0, 1, 0, 1, 0, 0, 4, 96, 0, 4, 156, 154, 67, 10,
+        192, 82, 0, 28, 0, 1, 0, 0, 4, 96, 0, 16, 32, 1, 5, 2, 70, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        16, 192, 229, 0, 1, 0, 1, 0, 0, 4, 96, 0, 4, 156, 154, 66, 10, 192, 229, 0, 28, 0, 1, 0,
+        0, 4, 96, 0, 16, 38, 16, 0, 161, 16, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 192, 111, 0, 1, 0,
+        1, 0, 0, 4, 96, 0, 4, 156, 154, 64, 10, 192, 111, 0, 28, 0, 1, 0, 0, 4, 96, 0, 16, 32, 1,
+        5, 2, 243, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 192, 211, 0, 1, 0, 1, 0, 0, 18, 112, 0, 4,
+        156, 154, 65, 10, 192, 211, 0, 28, 0, 1, 0, 0, 4, 96, 0, 16, 38, 16, 0, 161, 16, 20, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 16, 192, 175, 0, 1, 0, 1, 0, 0, 4, 96, 0, 4, 204, 74, 120, 1, 192,
+        175, 0, 28, 0, 1, 0, 0, 4, 96, 0, 16, 38, 16, 0, 161, 50, 209, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        83, 192, 143, 0, 1, 0, 1, 0, 0, 4, 96, 0, 4, 156, 154, 150, 1, 192, 143, 0, 28, 0, 1, 0,
+        0, 4, 96, 0, 16, 38, 16, 0, 161, 49, 209, 0, 0, 0, 0, 0, 0, 0, 0, 0, 83>>
+
+    msg = Message.from_iodata(raw)
+
+    assert msg.header.id == 44 * 256 + 76
+    assert msg.header.qdcount == 1
+    assert msg.header.ancount == 1
+    assert msg.header.nscount == 8
+    assert msg.header.arcount == 12
+
+    assert length(msg.anlist) == 1
+    assert length(msg.nslist) == 8
+    assert length(msg.arlist) == 12
+    # IO.puts(msg)
+  end
+
+  test "DNS message protocol DNS.to_iodata/1" do
     raw1 =
       <<0, 0, 132, 0, 0, 0, 0, 1, 0, 0, 0, 0, 12, 49, 48, 45, 49, 48, 48, 45, 49, 48, 45, 53, 50,
         5, 108, 111, 99, 97, 108, 0, 0, 1, 128, 1, 0, 0, 14, 16, 0, 4, 10, 100, 10, 52>>
 
-    msg = Message.from_binary(raw1)
+    msg = Message.from_iodata(raw1)
 
-    iodata = DNS.to_binary(msg)
+    iodata = DNS.to_iodata(msg)
 
     assert raw1 == iodata
   end

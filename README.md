@@ -13,7 +13,7 @@ The package can be installed by adding `ex_dns` to your list of dependencies in 
 ```elixir
 def deps do
   [
-    {:ex_dns, "~> 0.1.0"}
+    {:ex_dns, "~> 0.3.0"}
   ]
 end
 ```

@@ -59,55 +59,30 @@ defmodule DNS.Class do
   @doc """
   # Create a new Class struct
   """
-  @spec new(<<_::16>> | integer()) :: Class.t()
+  @spec new(<<_::16>> | integer() | atom()) :: Class.t()
   def new(value) when is_integer(value) do
     %Class{value: <<value::16>>}
+  end
+
+  def new(value) when is_atom(value) do
+    case value do
+      :in -> new(1)
+      :ch -> new(3)
+      :hs -> new(4)
+      :none -> new(254)
+      :any -> new(255)
+      _ -> throw("Unsupported atom class: #{value}")
+    end
   end
 
   def new(value) do
     %Class{value: value}
   end
-
-  @doc """
-  # Reserved
-  """
-  @spec reserved() :: 0
-  def reserved(), do: 0
-
-  @doc """
-  # Internet (IN)
-  """
-  @spec internet() :: 1
-  def internet(), do: 1
-
-  @doc """
-  # Chaos (CH)
-  """
-  @spec chaos() :: 3
-  def chaos(), do: 3
-
-  @doc """
-  # Hesiod (HS)
-  """
-  @spec hesiod() :: 4
-  def hesiod(), do: 4
-
-  @doc """
-  # QCLASS NONE
-  """
-  @spec qclass_none() :: 254
-  def qclass_none(), do: 254
-
-  @doc """
-  # QCLASS * (ANY)
-  """
-  @spec qclass_any() :: 255
-  def qclass_any(), do: 255
 end
 
 defimpl DNS.Parameter, for: DNS.Class do
   @impl true
-  def to_binary(%DNS.Class{value: <<value::16>>}) do
+  def to_iodata(%DNS.Class{value: <<value::16>>}) do
     <<value::16>>
   end
 end

@@ -13,14 +13,14 @@ defmodule DNS.Message.Record.Data.A do
     %__MODULE__{raw: raw, data: ip}
   end
 
-  def from_binary(raw, _message \\ nil) do
+  def from_iodata(raw, _message \\ nil) do
     <<a::8, b::8, c::8, d::8>> = raw
     %__MODULE__{raw: raw, data: {a, b, c, d}}
   end
 
   defimpl DNS.Parameter, for: DNS.Message.Record.Data.A do
     @impl true
-    def to_binary(%DNS.Message.Record.Data.A{data: data}) do
+    def to_iodata(%DNS.Message.Record.Data.A{data: data}) do
       {a, b, c, d} = data
       <<4::16, a::8, b::8, c::8, d::8>>
     end

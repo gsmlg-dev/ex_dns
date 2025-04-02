@@ -11,6 +11,6 @@ defmodule DNS.Message.Record.Data.MXTest do
     domain = "www.gsmlg.com"
     data = DNS.Message.Record.Data.MX.new({10, domain})
 
-    assert "#{data}" == "10 #{domain}"
+    assert "#{data}" == "10 #{domain}."
   end
 end

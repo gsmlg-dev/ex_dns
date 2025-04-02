@@ -14,7 +14,7 @@ defmodule DNS.Message.Record.Data.SOA do
 
   def new({ns, rp, serial, refresh, retry, expire, negative}) do
     raw =
-      <<DNS.to_binary(ns)::binary, DNS.to_binary(rp)::binary, serial::32, refresh::32, retry::32,
+      <<DNS.to_iodata(ns)::binary, DNS.to_iodata(rp)::binary, serial::32, refresh::32, retry::32,
         expire::32, negative::32>>
 
     %__MODULE__{
@@ -24,11 +24,11 @@ defmodule DNS.Message.Record.Data.SOA do
     }
   end
 
-  def from_binary(raw, message \\ nil) do
-    ns = Domain.from_binary(raw, message)
+  def from_iodata(raw, message \\ nil) do
+    ns = Domain.from_iodata(raw, message)
 
     rp =
-      Domain.from_binary(binary_part(raw, ns.size, byte_size(raw) - ns.size), message)
+      Domain.from_iodata(binary_part(raw, ns.size, byte_size(raw) - ns.size), message)
 
     <<serial::32, refresh::32, retry::32, expire::32, negative::32>> =
       binary_part(raw, ns.size + rp.size, byte_size(raw) - ns.size - rp.size)
@@ -42,10 +42,10 @@ defmodule DNS.Message.Record.Data.SOA do
 
   defimpl DNS.Parameter, for: DNS.Message.Record.Data.SOA do
     @impl true
-    def to_binary(%DNS.Message.Record.Data.SOA{data: data}) do
+    def to_iodata(%DNS.Message.Record.Data.SOA{data: data}) do
       {ns, rp, serial, refresh, retry, expire, negative} = data
-      ns_binary = DNS.to_binary(ns)
-      rp_binary = DNS.to_binary(rp)
+      ns_binary = DNS.to_iodata(ns)
+      rp_binary = DNS.to_iodata(rp)
       size = byte_size(ns_binary) + byte_size(rp_binary) + 20
 
       <<size::16, ns_binary::binary, rp_binary::binary, serial::32, refresh::32, retry::32,

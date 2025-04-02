@@ -167,7 +167,7 @@ defmodule DNS.Message.EDNS0 do
     }
   end
 
-  def from_binary(
+  def from_iodata(
         <<0::8, 41::16, udp_payload::16, extended_rcode::8, version::8, do_bit::1, flags::15,
           rdlenght::16, rdata::binary-size(rdlenght)>>
       ) do
@@ -190,13 +190,13 @@ defmodule DNS.Message.EDNS0 do
   end
 
   defp parse_options(<<code::16, len::16, data::binary-size(len), rest::binary>>) do
-    option = Option.from_binary(<<code::16, len::16, data::binary-size(len)>>)
+    option = Option.from_iodata(<<code::16, len::16, data::binary-size(len)>>)
     [option | parse_options(rest)]
   end
 
   defimpl DNS.Parameter, for: DNS.Message.EDNS0 do
     @impl true
-    def to_binary(%DNS.Message.EDNS0{
+    def to_iodata(%DNS.Message.EDNS0{
           udp_payload: udp_payload,
           extended_rcode: extended_rcode,
           version: version,
@@ -204,7 +204,7 @@ defmodule DNS.Message.EDNS0 do
           flags: flags,
           options: options
         }) do
-      options_binary = options |> Enum.map(&DNS.to_binary/1) |> Enum.join(<<>>)
+      options_binary = options |> Enum.map(&DNS.to_iodata/1) |> Enum.join(<<>>)
 
       <<0::8, 41::16, udp_payload::16, extended_rcode::8, version::8, do_bit::1, flags::15,
         byte_size(options_binary)::16, options_binary::binary>>

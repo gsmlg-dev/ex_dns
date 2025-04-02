@@ -14,17 +14,17 @@ defmodule DNS.Message.Record.Data.SRV do
     domain = Domain.new(str)
 
     %__MODULE__{
-      raw: <<priority::16, weight::16, port::16, DNS.to_binary(domain)::binary>>,
+      raw: <<priority::16, weight::16, port::16, DNS.to_iodata(domain)::binary>>,
       data: {priority, weight, port, domain},
       rdlength: domain.size + 6
     }
   end
 
-  def from_binary(<<priority::16, weight::16, port::16, data::binary>>, message \\ nil) do
-    domain = Domain.from_binary(data, message)
+  def from_iodata(<<priority::16, weight::16, port::16, data::binary>>, message \\ nil) do
+    domain = Domain.from_iodata(data, message)
 
     %__MODULE__{
-      raw: <<priority::16, weight::16, port::16, DNS.to_binary(domain)::binary>>,
+      raw: <<priority::16, weight::16, port::16, DNS.to_iodata(domain)::binary>>,
       data: {priority, weight, port, domain},
       rdlength: byte_size(data) + 6
     }
@@ -32,7 +32,7 @@ defmodule DNS.Message.Record.Data.SRV do
 
   defimpl DNS.Parameter, for: DNS.Message.Record.Data.SRV do
     @impl true
-    def to_binary(%DNS.Message.Record.Data.SRV{raw: raw}) do
+    def to_iodata(%DNS.Message.Record.Data.SRV{raw: raw}) do
       <<byte_size(raw)::16, raw::binary>>
     end
   end
