@@ -33,10 +33,10 @@ defmodule DNS.MixProject do
 
   defp deps() do
     [
-      {:ex_doc, "~> 0.25", runtime: false},
       {:machete, ">= 0.0.0", only: [:dev, :test]},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:credo, "~> 1.5", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
 
