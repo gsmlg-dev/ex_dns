@@ -9,14 +9,15 @@ defmodule Mix.Tasks.Dns.FetchRoot do
 
   defp check_data_dir() do
     data_dir = Dns.Zone.RootHint.data_dir()
+
     unless File.exists?(data_dir) do
-      IO.puts "data_dir not exists, create it #{data_dir}"
+      IO.puts("data_dir not exists, create it #{data_dir}")
       File.mkdir_p!(data_dir)
     end
   end
 
   defp write_file(name, data) do
-    IO.puts "wrtiting #{String.length(data)} bytes to file #{name}"
+    IO.puts("wrtiting #{String.length(data)} bytes to file #{name}")
     data_dir = Dns.Zone.RootHint.data_dir()
     path = Path.join(data_dir, name)
     File.write(path, data)
@@ -24,11 +25,12 @@ defmodule Mix.Tasks.Dns.FetchRoot do
 
   defp fetch(url) do
     uri = URI.parse(url)
+
     case Tesla.get(url, headers: [{"User-Agent", @user_agent}, {"Host", uri.host}]) do
-      {:ok, %Tesla.Env{status: 200, body: data}} ->
+      {:ok, %{status: 200, body: data}} ->
         {:ok, data}
 
-      {:ok, %Tesla.Env{status: status, body: data}} ->
+      {:ok, %{status: status, body: data}} ->
         {:error, "fetch error: #{status}: #{data}"}
 
       {:error, reason} ->
@@ -61,6 +63,7 @@ defmodule Mix.Tasks.Dns.FetchRoot do
     for {name, file_name} <- files do
       file_url = "#{base_url}#{file_name}"
       IO.puts("Fetching #{name} from #{file_url}")
+
       case fetch(file_url) do
         {:ok, data} ->
           write_file(file_name, data)
@@ -70,6 +73,7 @@ defmodule Mix.Tasks.Dns.FetchRoot do
       end
     end
 
-    :ok
+    {_, 0} =
+      System.cmd("sha256sum", ["-c", "checksums-sha256.txt"], cd: Dns.Zone.RootHint.data_dir())
   end
 end
