@@ -78,6 +78,10 @@ defmodule DNS.Class do
   def new(value) do
     %Class{value: value}
   end
+
+  def internet() do
+    new(1)
+  end
 end
 
 defimpl DNS.Parameter, for: DNS.Class do

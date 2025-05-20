@@ -1,4 +1,4 @@
-defmodule Dns.Zone.RootHint do
+defmodule DNS.Zone.RootHint do
   @moduledoc """
   DNS Root Hint
 
@@ -24,6 +24,8 @@ defmodule Dns.Zone.RootHint do
   m.root-servers.net | 202.12.27.33, 2001:dc3::35 | WIDE Project
 
   """
+  alias DNS.ResourceRecordType, as: RRType
+  alias DNS.Message.Domain
 
   @links [
     root_hints: "https://www.internic.net/domain/named.root",
@@ -41,4 +43,34 @@ defmodule Dns.Zone.RootHint do
   def links(), do: @links
 
   def data_dir, do: Path.join([:code.priv_dir(:ex_dns), "data"])
+
+  def root_hints() do
+    root_hints_text()
+    |> String.split("\n")
+    |> Enum.filter(&(!String.starts_with?(&1, ";")))
+    |> Enum.filter(&(String.length(&1) > 0))
+    |> Enum.map(fn line ->
+      type_map = %{"A" => :a, "AAAA" => :aaaa, "NS" => :ns}
+      [name, ttl, type, data] = line |> String.split(~r[\s+])
+      rtype = Map.get(type_map, type)
+
+      rdata =
+        case rtype do
+          :a ->
+            {:ok, addr} = :inet.parse_ipv4_address(String.to_charlist(data))
+            addr
+
+          :aaaa ->
+            {:ok, addr} = :inet.parse_ipv6_address(String.to_charlist(data))
+            addr
+
+          :ns ->
+            Domain.new(data)
+        end
+
+      [name: name, ttl: String.to_integer(ttl), type: RRType.new(rtype), rdata: rdata]
+    end)
+  end
+
+  def root_hints_text, do: File.read!(Path.join(data_dir(), "named.root"))
 end

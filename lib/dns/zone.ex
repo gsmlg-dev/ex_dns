@@ -1,4 +1,4 @@
-defmodule Dns.Zone do
+defmodule DNS.Zone do
   @moduledoc """
   DNS Zone
 
@@ -11,14 +11,33 @@ defmodule Dns.Zone do
   - Reverse
   """
 
-  @type zone_type :: :authoritative | :stub | :forward | :recursive | :caching | :reverse
+  alias DNS.Zone.Name
+  alias DNS.Zone.RRSet
+
+  @type zone_type :: :authoritative | :stub | :forward | :caching | :reverse
 
   @type t :: %__MODULE__{
-          name: String.t(),
+          name: Name.t(),
           type: zone_type(),
-          default_ttl: integer(),
-          rr_sets: list(Dns.RRSet.t())
+          options: list(term()),
+          data: list(RRSet.t())
         }
 
-  defstruct name: nil, type: nil, default_ttl: 3600, rr_sets: []
+  defstruct name: Name.new("."), type: :authoritative, data: [], options: []
+
+  @spec new(binary() | map(), any()) :: DNS.Zone.t()
+  def new(name, type \\ :authoritative, options \\ [])
+
+  def new(name, type, options) when is_binary(name) do
+    new(Name.new(name), type, options)
+  end
+
+  def new(name, type, options) when is_struct(name, Name) do
+    %__MODULE__{
+      name: name,
+      type: type,
+      options: options,
+      data: []
+    }
+  end
 end

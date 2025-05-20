@@ -451,4 +451,14 @@ defmodule DNS.ResourceRecordType do
       end
     end
   end
+
+  defimpl Inspect, for: DNS.ResourceRecordType do
+    import Inspect.Algebra
+
+    @impl true
+    def inspect(rr_type, _opts) do
+      value = String.Chars.to_string(rr_type)
+      concat(["#DNS.ResourceRecordType<", value, ">"])
+    end
+  end
 end

@@ -8,7 +8,7 @@ defmodule Mix.Tasks.Dns.FetchRoot do
   @user_agent "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
 
   defp check_data_dir() do
-    data_dir = Dns.Zone.RootHint.data_dir()
+    data_dir = DNS.Zone.RootHint.data_dir()
 
     unless File.exists?(data_dir) do
       IO.puts("data_dir not exists, create it #{data_dir}")
@@ -18,7 +18,7 @@ defmodule Mix.Tasks.Dns.FetchRoot do
 
   defp write_file(name, data) do
     IO.puts("wrtiting #{String.length(data)} bytes to file #{name}")
-    data_dir = Dns.Zone.RootHint.data_dir()
+    data_dir = DNS.Zone.RootHint.data_dir()
     path = Path.join(data_dir, name)
     File.write(path, data)
   end
@@ -44,7 +44,7 @@ defmodule Mix.Tasks.Dns.FetchRoot do
 
     check_data_dir()
 
-    links = Dns.Zone.RootHint.links()
+    links = DNS.Zone.RootHint.links()
 
     for {name, url} <- links, is_binary(url) do
       case fetch(url) do
@@ -74,6 +74,6 @@ defmodule Mix.Tasks.Dns.FetchRoot do
     end
 
     {_, 0} =
-      System.cmd("sha256sum", ["-c", "checksums-sha256.txt"], cd: Dns.Zone.RootHint.data_dir())
+      System.cmd("sha256sum", ["-c", "checksums-sha256.txt"], cd: DNS.Zone.RootHint.data_dir())
   end
 end
