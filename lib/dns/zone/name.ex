@@ -13,6 +13,8 @@ defmodule DNS.Zone.Name do
   defstruct value: ".", data: <<0>>
 
   @spec new(binary()) :: Name.t()
+  def new("."), do: %Name{value: ".", data: <<0>>}
+
   def new(value) do
     value = value |> String.trim(".")
 
@@ -35,6 +37,10 @@ defmodule DNS.Zone.Name do
     }
   end
 
+  def from_domain(%DNS.Message.Domain{value: value}) do
+    new(value)
+  end
+
   @doc """
   Check if the name1 is a child of name2.
   """
@@ -45,6 +51,23 @@ defmodule DNS.Zone.Name do
   end
 
   def child?(_, _), do: false
+
+  def match_domain(%Name{data: name}, %DNS.Message.Domain{value: value}) do
+    dn = Name.new(value)
+    match_start(name, dn.data)
+  end
+
+  defp match_start(a, b) do
+    match_start(a, b, 0)
+  end
+
+  defp match_start(<<c, rest1::binary>>, <<c, rest2::binary>>, count) do
+    match_start(rest1, rest2, count + 1)
+  end
+
+  defp match_start(_, _, count) do
+    count
+  end
 
   defimpl DNS.Parameter, for: Name do
     @impl true

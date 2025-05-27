@@ -110,3 +110,13 @@ defimpl String.Chars, for: DNS.Class do
     end
   end
 end
+
+defimpl Inspect, for: DNS.Class do
+  import Inspect.Algebra
+
+  @impl true
+  def inspect(dns_class, _opts) do
+    value = String.Chars.to_string(dns_class)
+    concat(["#DNS.Class<", value, ">"])
+  end
+end

@@ -6,26 +6,22 @@ defmodule DNS.Zone do
   - Authoritative
   - Stub
   - Forward
-  - Recursive
-  - Caching
-  - Reverse
+  - Cache
   """
 
   alias DNS.Zone.Name
-  alias DNS.Zone.RRSet
 
-  @type zone_type :: :authoritative | :stub | :forward | :caching | :reverse
+  @type zone_type :: :authoritative | :stub | :forward | :cache
 
   @type t :: %__MODULE__{
           name: Name.t(),
           type: zone_type(),
-          options: list(term()),
-          data: list(RRSet.t())
+          options: list(term())
         }
 
-  defstruct name: Name.new("."), type: :authoritative, data: [], options: []
+  defstruct name: Name.new("."), type: :authoritative, options: []
 
-  @spec new(binary() | map(), any()) :: DNS.Zone.t()
+  @spec new(binary() | map(), any()) :: t()
   def new(name, type \\ :authoritative, options \\ [])
 
   def new(name, type, options) when is_binary(name) do
@@ -36,8 +32,24 @@ defmodule DNS.Zone do
     %__MODULE__{
       name: name,
       type: type,
-      options: options,
-      data: []
+      options: options
     }
+  end
+
+  @spec hostname(Name.t(), DNS.Message.Domain.t()) :: Name.t()
+  def hostname(%Name{value: "."} = _zone_name, %DNS.Message.Domain{} = domain) do
+    Name.from_domain(domain)
+  end
+
+  def hostname(%Name{} = zone_name, %DNS.Message.Domain{} = domain) do
+    domain_name = Name.from_domain(domain)
+
+    if Name.child?(zone_name, domain_name) do
+      domain_name.value
+      |> String.trim_trailing(zone_name.value)
+      |> Name.new()
+    else
+      false
+    end
   end
 end

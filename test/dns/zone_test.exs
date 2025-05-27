@@ -11,15 +11,13 @@ defmodule DNS.ZoneTest do
     assert root_zone == %Zone{
              name: Name.new(name),
              type: :authoritative,
-             options: [],
-             data: []
+             options: []
            }
 
     assert Zone.new("example.com") == %Zone{
              name: Name.new("example.com"),
              type: :authoritative,
-             options: [],
-             data: []
+             options: []
            }
   end
 end

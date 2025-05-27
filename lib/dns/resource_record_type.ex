@@ -162,8 +162,8 @@ defmodule DNS.ResourceRecordType do
 
   defimpl String.Chars, for: DNS.ResourceRecordType do
     @impl true
-    def to_string(rr_type) do
-      <<value::16>> = rr_type.value
+    def to_string(%ResourceRecordType{value: value} = _rtype) do
+      <<value::16>> = value
 
       case value do
         1 ->

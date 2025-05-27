@@ -4,6 +4,7 @@ defmodule DNS.Zone.RootHintTest do
   alias DNS.ResourceRecordType, as: RRType
   alias DNS.Zone.RootHint
   alias DNS.Zone.RRSet
+  alias DNS.Zone.Name
 
   test "DNS zone root hint" do
     root_hints = RootHint.root_hints()
@@ -20,7 +21,7 @@ defmodule DNS.Zone.RootHintTest do
         end
       end)
 
-    rrset = RRSet.new(".", ".", RRType.new(:ns), ns_list |> Enum.map(& &1[:rdata]), [])
+    rrset = RRSet.new(Name.new("."), RRType.new(:ns), ns_list |> Enum.map(& &1[:rdata]), [])
 
     glues =
       rrset.data
@@ -34,7 +35,7 @@ defmodule DNS.Zone.RootHintTest do
         list ++ glues
       end)
 
-    rrset = %{rrset | glue: glues}
+    rrset = %{rrset | options: [glues: glues]}
 
     assert is_struct(rrset, RRSet)
   end
