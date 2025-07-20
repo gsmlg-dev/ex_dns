@@ -73,4 +73,22 @@ defmodule DNS.Zone.RootHint do
   end
 
   def root_hints_text, do: File.read!(Path.join(data_dir(), "named.root"))
+
+  def nameservers() do
+    root_hints()
+    |> Enum.filter(fn record -> record[:type] == RRType.new(:ns) end)
+    |> Enum.map(fn record -> record[:rdata] end)
+    |> Enum.into(%{}, fn name ->
+      glue = root_hints() |> Enum.filter(fn record -> record[:name] == to_string(name) end)
+
+      glue_a = glue |> Enum.filter(fn record -> record[:type] == RRType.new(:a) end)
+      glue_aaaa = glue |> Enum.filter(fn record -> record[:type] == RRType.new(:aaaa) end)
+
+      {to_string(name), %{
+        name: name,
+        ipv4: glue_a |> Enum.map(fn record -> record[:rdata] end),
+        ipv6: glue_aaaa |> Enum.map(fn record -> record[:rdata] end)
+      }}
+    end)
+  end
 end
