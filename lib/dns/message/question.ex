@@ -48,7 +48,7 @@ defmodule DNS.Message.Question do
     list |> Enum.map(&DNS.to_iodata/1) |> Enum.join(<<>>)
   end
 
-  @spec list_from_message(binary()) :: {list(), non_neg_integer()}
+  @spec list_from_message(<<_::64, _::_*8>>) :: {[t()], non_neg_integer()}
   def list_from_message(<<header::binary-size(12), _::binary>> = message) do
     list_from_message(message, Header.qdcount(header))
   end

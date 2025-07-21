@@ -36,7 +36,7 @@ defmodule DNS.Zone do
     }
   end
 
-  @spec hostname(Name.t(), DNS.Message.Domain.t()) :: Name.t()
+  @spec hostname(Name.t(), DNS.Message.Domain.t()) :: Name.t() | false
   def hostname(%Name{value: "."} = _zone_name, %DNS.Message.Domain{} = domain) do
     Name.from_domain(domain)
   end

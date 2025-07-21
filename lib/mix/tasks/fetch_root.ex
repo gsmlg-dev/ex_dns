@@ -20,13 +20,15 @@ defmodule Mix.Tasks.Dns.FetchRoot do
     IO.puts("wrtiting #{String.length(data)} bytes to file #{name}")
     data_dir = DNS.Zone.RootHint.data_dir()
     path = Path.join(data_dir, name)
-    File.write(path, data)
+    _ = File.write(path, data)
+    :ok
   end
 
   defp fetch(url) do
     uri = URI.parse(url)
-
-    case Tesla.get(url, headers: [{"User-Agent", @user_agent}, {"Host", uri.host}]) do
+    headers = [{"User-Agent", @user_agent}, {"Host", uri.host}]
+    
+    case Tesla.get(url, headers: headers) do
       {:ok, %{status: 200, body: data}} ->
         {:ok, data}
 
@@ -40,7 +42,7 @@ defmodule Mix.Tasks.Dns.FetchRoot do
 
   @shortdoc "Fetch Root data from [iana](https://data.iana.org/)"
   def run(_) do
-    Mix.Task.run("app.start")
+    Mix.Task.run("app.start", [])
 
     check_data_dir()
 
@@ -50,10 +52,12 @@ defmodule Mix.Tasks.Dns.FetchRoot do
       case fetch(url) do
         {:ok, data} ->
           [_, file_name] = Regex.run(~r"\/([^/]+)$", url)
-          write_file(file_name, data)
+          _ = write_file(file_name, data)
+          :ok
 
         {:error, reason} ->
           IO.puts("Error fetching #{name} #{url}: #{inspect(reason)}")
+          :error
       end
     end
 
@@ -66,10 +70,12 @@ defmodule Mix.Tasks.Dns.FetchRoot do
 
       case fetch(file_url) do
         {:ok, data} ->
-          write_file(file_name, data)
+          _ = write_file(file_name, data)
+          :ok
 
         {:error, reason} ->
           IO.puts("Error fetching #{name} #{file_url}: #{inspect(reason)}")
+          :error
       end
     end
 
