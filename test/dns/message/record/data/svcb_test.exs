@@ -245,13 +245,13 @@ defmodule DNS.Message.Record.Data.SVCBTest do
     test "converts SVCB record to string" do
       svc_priority = 1
       target_name = Domain.new("example.com")
-      svc_params = <<0x00, 0x01, 0x00, 0x04, 104, 116, 116, 112>>
+      svc_params = <<0x00, 0x01, 0x00, 0x05, 4, 104, 116, 116, 112>>
 
       svcb = SVCB.new({svc_priority, target_name, svc_params})
 
       str = to_string(svcb)
 
-      assert str == "#{svc_priority} #{target_name} #{svc_params}"
+      assert str == "#{svc_priority} #{target_name} alpn=http"
     end
 
     test "converts AliasMode SVCB to string" do
@@ -269,13 +269,13 @@ defmodule DNS.Message.Record.Data.SVCBTest do
     test "converts SVCB with root target to string" do
       svc_priority = 16
       target_name = Domain.new(".")
-      svc_params = <<0x00, 0x01, 0x00, 0x05, 104, 116, 116, 112, 115>>
+      svc_params = <<0x00, 0x01, 0x00, 0x06, 5, 104, 116, 116, 112, 115>>
 
       svcb = SVCB.new({svc_priority, target_name, svc_params})
 
       str = to_string(svcb)
 
-      assert str == "#{svc_priority} #{target_name} #{svc_params}"
+      assert str == "#{svc_priority} #{target_name} alpn=https"
     end
   end
 end
