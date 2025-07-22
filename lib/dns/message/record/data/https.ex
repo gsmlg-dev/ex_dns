@@ -82,6 +82,7 @@ defmodule DNS.Message.Record.Data.HTTPS do
     def to_string(%DNS.Message.Record.Data.HTTPS{data: data}) do
       {svc_priority, target_name, svc_params} = data
       parsed_params = parse_svc_params(svc_params)
+
       if byte_size(svc_params) == 0 do
         "#{svc_priority} #{target_name}"
       else
@@ -131,19 +132,17 @@ defmodule DNS.Message.Record.Data.HTTPS do
 
     defp format_svc_param_value(key, value) do
       case key do
-        1 -> "https"
-        3 -> "port=#{inspect(:binary.decode_unsigned(value))}"
-        4 -> "ipv4hint=#{parse_ip_list(value, 4)}"
-        6 -> "ipv6hint=#{parse_ip_list(value, 16)}"
-        _ -> "key#{key}=#{Base.encode16(value, case: :lower)}"
+        1 -> parse_alpn_list(value)
+        3 -> "#{inspect(:binary.decode_unsigned(value))}"
+        4 -> "#{parse_ip_list(value, 4)}"
+        6 -> "#{parse_ip_list(value, 16)}"
+        _ -> "#{Base.encode16(value, case: :lower)}"
       end
     end
 
     defp parse_alpn_list(value) do
       parse_alpn_list(value, [])
     end
-
-    defp parse_alpn_list(<<>>, acc), do: Enum.join(Enum.reverse(acc), ",")
 
     defp parse_alpn_list(<<len::8, alpn::binary-size(len), rest::binary>>, acc) do
       parse_alpn_list(rest, [alpn | acc])

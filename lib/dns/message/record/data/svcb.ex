@@ -81,10 +81,11 @@ defmodule DNS.Message.Record.Data.SVCB do
   defimpl String.Chars, for: DNS.Message.Record.Data.SVCB do
     def to_string(%DNS.Message.Record.Data.SVCB{data: data}) do
       {svc_priority, target_name, svc_params} = data
+
       if byte_size(svc_params) == 0 do
         "#{svc_priority} #{target_name} "
       else
-        "#{svc_priority} #{target_name} #{svc_params}"
+        "#{svc_priority} #{target_name} #{parse_svc_params(svc_params)}"
       end
     end
 
