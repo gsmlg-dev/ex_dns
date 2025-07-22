@@ -35,23 +35,23 @@ defmodule DNS.Message.EDNS0.Option.KeyTag do
     %__MODULE__{length: len, data: key_tag_list}
   end
 
-  def from_iodata(
-        <<14::16, length::16, key_tag_data::binary-size(length)>>
-      ) do
-    key_tags = 
+  def from_iodata(<<14::16, length::16, key_tag_data::binary-size(length)>>) do
+    key_tags =
       for <<key_tag::16 <- key_tag_data>> do
         key_tag
       end
+
     %__MODULE__{length: length, data: key_tags}
   end
 
   defimpl DNS.Parameter, for: DNS.Message.EDNS0.Option.KeyTag do
     @impl true
     def to_iodata(%DNS.Message.EDNS0.Option.KeyTag{data: key_tag_list}) do
-      key_tag_binary = 
+      key_tag_binary =
         key_tag_list
         |> Enum.map(fn tag -> <<tag::16>> end)
         |> Enum.join()
+
       <<14::16, byte_size(key_tag_binary)::16, key_tag_binary::binary>>
     end
   end

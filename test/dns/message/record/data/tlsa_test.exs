@@ -4,41 +4,53 @@ defmodule DNS.Message.Record.Data.TLSATest do
 
   describe "new/1" do
     test "creates TLSA record with valid parameters" do
-      usage = 3 # Domain-issued certificate
-      selector = 1 # SubjectPublicKeyInfo
-      matching_type = 1 # SHA-256
-      cert_data = :binary.copy(<<0x01, 0x02, 0x03, 0x04>>, 32) # SHA-256 hash
-      
+      # Domain-issued certificate
+      usage = 3
+      # SubjectPublicKeyInfo
+      selector = 1
+      # SHA-256
+      matching_type = 1
+      # SHA-256 hash
+      cert_data = :binary.copy(<<0x01, 0x02, 0x03, 0x04>>, 32)
+
       tlsa = TLSA.new({usage, selector, matching_type, cert_data})
-      
+
       assert tlsa.type.value == <<52::16>>
       assert tlsa.data == {usage, selector, matching_type, cert_data}
-      
+
       expected_raw = <<usage::8, selector::8, matching_type::8, cert_data::binary>>
       assert tlsa.raw == expected_raw
       assert tlsa.rdlength == 3 + byte_size(cert_data)
     end
 
     test "creates TLSA record with different parameters" do
-      usage = 0 # CA constraint
-      selector = 0 # Full certificate
-      matching_type = 0 # Exact match
-      cert_data = :binary.copy(<<0xAA, 0xBB>>, 64) # Full certificate
-      
+      # CA constraint
+      usage = 0
+      # Full certificate
+      selector = 0
+      # Exact match
+      matching_type = 0
+      # Full certificate
+      cert_data = :binary.copy(<<0xAA, 0xBB>>, 64)
+
       tlsa = TLSA.new({usage, selector, matching_type, cert_data})
-      
+
       assert tlsa.data == {usage, selector, matching_type, cert_data}
       assert tlsa.rdlength == 3 + 128
     end
 
     test "handles TLSA record with SHA-512" do
-      usage = 2 # Trust anchor constraint
-      selector = 1 # SubjectPublicKeyInfo
-      matching_type = 2 # SHA-512
-      cert_data = :binary.copy(<<0x11, 0x22>>, 32) # SHA-512 truncated
-      
+      # Trust anchor constraint
+      usage = 2
+      # SubjectPublicKeyInfo
+      selector = 1
+      # SHA-512
+      matching_type = 2
+      # SHA-512 truncated
+      cert_data = :binary.copy(<<0x11, 0x22>>, 32)
+
       tlsa = TLSA.new({usage, selector, matching_type, cert_data})
-      
+
       assert tlsa.data == {usage, selector, matching_type, cert_data}
       assert tlsa.rdlength == 3 + 64
     end
@@ -48,9 +60,9 @@ defmodule DNS.Message.Record.Data.TLSATest do
       selector = 0
       matching_type = 0
       cert_data = <<>>
-      
+
       tlsa = TLSA.new({usage, selector, matching_type, cert_data})
-      
+
       assert tlsa.type.value == <<52::16>>
       assert tlsa.data == {usage, selector, matching_type, cert_data}
       assert tlsa.rdlength == 3
@@ -64,23 +76,26 @@ defmodule DNS.Message.Record.Data.TLSATest do
       matching_type = 1
       cert_data = :binary.copy(<<0x01, 0x02, 0x03, 0x04>>, 32)
       raw = <<usage::8, selector::8, matching_type::8, cert_data::binary>>
-      
+
       tlsa = TLSA.from_iodata(raw)
-      
+
       assert tlsa.type.value == <<52::16>>
       assert tlsa.data == {usage, selector, matching_type, cert_data}
       assert tlsa.raw == raw
     end
 
     test "parses TLSA record with different parameters" do
-      usage = 1 # Service certificate constraint
-      selector = 0 # Full certificate
-      matching_type = 2 # SHA-512
+      # Service certificate constraint
+      usage = 1
+      # Full certificate
+      selector = 0
+      # SHA-512
+      matching_type = 2
       cert_data = <<0xAA, 0xBB, 0xCC, 0xDD>>
       raw = <<usage::8, selector::8, matching_type::8, cert_data::binary>>
-      
+
       tlsa = TLSA.from_iodata(raw)
-      
+
       assert tlsa.rdlength == 7
       assert tlsa.data == {usage, selector, matching_type, cert_data}
     end
@@ -91,9 +106,9 @@ defmodule DNS.Message.Record.Data.TLSATest do
       matching_type = 0
       cert_data = <<>>
       raw = <<usage::8, selector::8, matching_type::8, cert_data::binary>>
-      
+
       tlsa = TLSA.from_iodata(raw)
-      
+
       assert tlsa.rdlength == 3
       assert tlsa.data == {usage, selector, matching_type, cert_data}
     end
@@ -106,11 +121,11 @@ defmodule DNS.Message.Record.Data.TLSATest do
       matching_type = 1
       cert_data = :binary.copy(<<0x01, 0x02, 0x03, 0x04>>, 32)
       tlsa = TLSA.new({usage, selector, matching_type, cert_data})
-      
+
       iodata = DNS.Parameter.to_iodata(tlsa)
       expected_size = 3 + byte_size(cert_data)
       expected = <<expected_size::16, usage::8, selector::8, matching_type::8, cert_data::binary>>
-      
+
       assert iodata == expected
     end
 
@@ -120,10 +135,10 @@ defmodule DNS.Message.Record.Data.TLSATest do
       matching_type = 0
       cert_data = <<>>
       tlsa = TLSA.new({usage, selector, matching_type, cert_data})
-      
+
       iodata = DNS.Parameter.to_iodata(tlsa)
       expected = <<3::16, usage::8, selector::8, matching_type::8>>
-      
+
       assert iodata == expected
     end
   end
@@ -135,10 +150,10 @@ defmodule DNS.Message.Record.Data.TLSATest do
       matching_type = 1
       cert_data = :binary.copy(<<0x01, 0x02, 0x03, 0x04>>, 32)
       tlsa = TLSA.new({usage, selector, matching_type, cert_data})
-      
+
       str = to_string(tlsa)
       cert_hex = Base.encode16(cert_data, case: :lower)
-      
+
       assert str == "#{usage} #{selector} #{matching_type} #{cert_hex}"
     end
 
@@ -148,9 +163,9 @@ defmodule DNS.Message.Record.Data.TLSATest do
       matching_type = 0
       cert_data = <<>>
       tlsa = TLSA.new({usage, selector, matching_type, cert_data})
-      
+
       str = to_string(tlsa)
-      
+
       assert str == "#{usage} #{selector} #{matching_type} "
     end
   end

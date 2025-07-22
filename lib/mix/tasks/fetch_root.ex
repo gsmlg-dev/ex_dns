@@ -27,7 +27,7 @@ defmodule Mix.Tasks.Dns.FetchRoot do
   defp fetch(url) do
     uri = URI.parse(url)
     headers = [{"User-Agent", @user_agent}, {"Host", uri.host}]
-    
+
     case Tesla.get(url, headers: headers) do
       {:ok, %{status: 200, body: data}} ->
         {:ok, data}

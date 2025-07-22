@@ -17,7 +17,8 @@ defmodule DNS.Message.Record.Data.DS do
           type: RRType.t(),
           rdlength: 0..65535,
           raw: bitstring(),
-          data: {key_tag :: 0..65535, algorithm :: 0..255, digest_type :: 0..255, digest :: binary()}
+          data:
+            {key_tag :: 0..65535, algorithm :: 0..255, digest_type :: 0..255, digest :: binary()}
         }
 
   defstruct raw: nil, type: RRType.new(43), rdlength: nil, data: nil
@@ -25,6 +26,7 @@ defmodule DNS.Message.Record.Data.DS do
   @spec new({integer(), integer(), integer(), binary()}) :: t()
   def new({key_tag, algorithm, digest_type, digest}) do
     raw = <<key_tag::16, algorithm::8, digest_type::8, digest::binary>>
+
     %__MODULE__{
       raw: raw,
       data: {key_tag, algorithm, digest_type, digest},
@@ -35,6 +37,7 @@ defmodule DNS.Message.Record.Data.DS do
   @spec from_iodata(bitstring(), bitstring() | nil) :: t()
   def from_iodata(raw, _message \\ nil) do
     <<key_tag::16, algorithm::8, digest_type::8, digest::binary>> = raw
+
     %__MODULE__{
       raw: raw,
       data: {key_tag, algorithm, digest_type, digest},

@@ -6,7 +6,7 @@ defmodule DNS.Message.Record.Data.OPTTest do
     test "creates OPT record" do
       edns0 = DNS.Message.EDNS0.new()
       opt = OPT.new(edns0)
-      
+
       assert opt.type.value == <<41::16>>
       assert %DNS.Message.EDNS0{} = opt.data
     end
@@ -17,7 +17,7 @@ defmodule DNS.Message.Record.Data.OPTTest do
       # Correct EDNS0 format: root(0) type(41) udp(512) ext_rcode(0) version(0) flags(0) rdlen(0)
       raw = <<0, 0, 41, 2, 0, 0, 0, 0, 0, 0, 0>>
       opt = OPT.from_iodata(raw)
-      
+
       assert opt.type.value == <<41::16>>
       assert %DNS.Message.EDNS0{} = opt.data
     end
@@ -28,7 +28,7 @@ defmodule DNS.Message.Record.Data.OPTTest do
       edns0 = DNS.Message.EDNS0.new()
       opt = OPT.new(edns0)
       iodata = DNS.Parameter.to_iodata(opt)
-      
+
       assert is_binary(iodata)
     end
   end
@@ -38,7 +38,7 @@ defmodule DNS.Message.Record.Data.OPTTest do
       edns0 = DNS.Message.EDNS0.new()
       opt = OPT.new(edns0)
       str = to_string(opt)
-      
+
       assert is_binary(str)
     end
   end

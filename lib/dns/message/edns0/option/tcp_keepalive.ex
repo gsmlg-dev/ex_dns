@@ -33,20 +33,17 @@ defmodule DNS.Message.EDNS0.Option.TcpKeepalive do
     case timeout_count do
       nil ->
         %__MODULE__{length: 0, data: nil}
+
       timeout when is_integer(timeout) ->
         %__MODULE__{length: 2, data: timeout}
     end
   end
 
-  def from_iodata(
-        <<11::16, 0::16>>
-      ) do
+  def from_iodata(<<11::16, 0::16>>) do
     %__MODULE__{length: 0, data: nil}
   end
 
-  def from_iodata(
-        <<11::16, 2::16, timeout_count::16>>
-      ) do
+  def from_iodata(<<11::16, 2::16, timeout_count::16>>) do
     %__MODULE__{length: 2, data: timeout_count}
   end
 

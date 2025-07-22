@@ -28,6 +28,7 @@ defmodule DNS.Message.Record.Data.OPT do
   @spec new(EDNS0.t()) :: t()
   def new(edns0) do
     raw = DNS.to_iodata(edns0)
+
     %__MODULE__{
       raw: raw,
       data: edns0,
@@ -38,6 +39,7 @@ defmodule DNS.Message.Record.Data.OPT do
   @spec from_iodata(bitstring(), bitstring() | nil) :: t()
   def from_iodata(raw, _message \\ nil) do
     edns0 = EDNS0.from_iodata(raw)
+
     %__MODULE__{
       raw: raw,
       data: edns0,

@@ -32,9 +32,7 @@ defmodule DNS.Message.EDNS0.Option.Chain do
     %__MODULE__{data: start_hash}
   end
 
-  def from_iodata(
-        <<13::16, 2::16, start_hash::16>>
-      ) do
+  def from_iodata(<<13::16, 2::16, start_hash::16>>) do
     %__MODULE__{data: start_hash}
   end
 

@@ -41,9 +41,7 @@ defmodule DNS.Message.EDNS0.Option.Padding do
     %__MODULE__{length: padding_length, data: padding_data}
   end
 
-  def from_iodata(
-        <<12::16, length::16, padding_data::binary-size(length)>>
-      ) do
+  def from_iodata(<<12::16, length::16, padding_data::binary-size(length)>>) do
     %__MODULE__{length: length, data: padding_data}
   end
 

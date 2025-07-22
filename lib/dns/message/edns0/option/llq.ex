@@ -35,7 +35,7 @@ defmodule DNS.Message.EDNS0.Option.LLQ do
             version :: 0..65535,
             opcode :: 0..65535,
             id :: <<_::64>>,
-            lease_life :: 0..4294967295
+            lease_life :: 0..4_294_967_295
           }
         }
 

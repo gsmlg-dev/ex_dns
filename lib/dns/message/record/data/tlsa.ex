@@ -17,7 +17,8 @@ defmodule DNS.Message.Record.Data.TLSA do
           type: RRType.t(),
           rdlength: 0..65535,
           raw: bitstring(),
-          data: {usage :: 0..255, selector :: 0..255, matching_type :: 0..255, cert_data :: binary()}
+          data:
+            {usage :: 0..255, selector :: 0..255, matching_type :: 0..255, cert_data :: binary()}
         }
 
   defstruct raw: nil, type: RRType.new(52), rdlength: nil, data: nil
@@ -25,6 +26,7 @@ defmodule DNS.Message.Record.Data.TLSA do
   @spec new({integer(), integer(), integer(), binary()}) :: t()
   def new({usage, selector, matching_type, cert_data}) do
     raw = <<usage::8, selector::8, matching_type::8, cert_data::binary>>
+
     %__MODULE__{
       raw: raw,
       data: {usage, selector, matching_type, cert_data},
@@ -35,6 +37,7 @@ defmodule DNS.Message.Record.Data.TLSA do
   @spec from_iodata(bitstring(), bitstring() | nil) :: t()
   def from_iodata(raw, _message \\ nil) do
     <<usage::8, selector::8, matching_type::8, cert_data::binary>> = raw
+
     %__MODULE__{
       raw: raw,
       data: {usage, selector, matching_type, cert_data},

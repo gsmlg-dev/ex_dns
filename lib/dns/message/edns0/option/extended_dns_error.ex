@@ -38,9 +38,7 @@ defmodule DNS.Message.EDNS0.Option.ExtendedDNSError do
     %__MODULE__{length: len, data: {info_code, extra_text}}
   end
 
-  def from_iodata(
-        <<15::16, length::16, info_code::16, extra_text::binary-size(length - 2)>>
-      ) do
+  def from_iodata(<<15::16, length::16, info_code::16, extra_text::binary-size(length - 2)>>) do
     %__MODULE__{length: length, data: {info_code, extra_text}}
   end
 
@@ -49,7 +47,7 @@ defmodule DNS.Message.EDNS0.Option.ExtendedDNSError do
     def to_iodata(%DNS.Message.EDNS0.Option.ExtendedDNSError{
           data: {info_code, extra_text}
         }) do
-      <<15::16, (2 + byte_size(extra_text))::16, info_code::16, extra_text::binary>>
+      <<15::16, 2 + byte_size(extra_text)::16, info_code::16, extra_text::binary>>
     end
   end
 

@@ -7,24 +7,25 @@ defmodule DNS.Message.Record.Data.CAATest do
       flags = 0
       tag = "issue"
       value = "letsencrypt.org"
-      
+
       caa = CAA.new({flags, tag, value})
-      
+
       assert caa.type.value == <<257::16>>
       assert caa.data == {flags, tag, value}
-      
+
       expected_raw = <<flags::8, byte_size(tag)::8, tag::binary, value::binary>>
       assert caa.raw == expected_raw
       assert caa.rdlength == 1 + 1 + byte_size(tag) + byte_size(value)
     end
 
     test "creates CAA record with issuewild tag" do
-      flags = 128 # Critical bit set
+      # Critical bit set
+      flags = 128
       tag = "issuewild"
       value = "digicert.com"
-      
+
       caa = CAA.new({flags, tag, value})
-      
+
       assert caa.data == {flags, tag, value}
     end
 
@@ -32,9 +33,9 @@ defmodule DNS.Message.Record.Data.CAATest do
       flags = 0
       tag = "iodef"
       value = "mailto:security@example.com"
-      
+
       caa = CAA.new({flags, tag, value})
-      
+
       assert caa.data == {flags, tag, value}
     end
 
@@ -42,9 +43,9 @@ defmodule DNS.Message.Record.Data.CAATest do
       flags = 0
       tag = "issue"
       value = ""
-      
+
       caa = CAA.new({flags, tag, value})
-      
+
       assert caa.data == {flags, tag, value}
       assert caa.rdlength == 1 + 1 + byte_size(tag) + 0
     end
@@ -53,9 +54,9 @@ defmodule DNS.Message.Record.Data.CAATest do
       flags = 0
       tag = "issue"
       value = "ca.example.net; account=12345"
-      
+
       caa = CAA.new({flags, tag, value})
-      
+
       assert caa.data == {flags, tag, value}
     end
   end
@@ -66,9 +67,9 @@ defmodule DNS.Message.Record.Data.CAATest do
       tag = "issue"
       value = "letsencrypt.org"
       raw = <<flags::8, byte_size(tag)::8, tag::binary, value::binary>>
-      
+
       caa = CAA.from_iodata(raw)
-      
+
       assert caa.type.value == <<257::16>>
       assert caa.data == {flags, tag, value}
       assert caa.raw == raw
@@ -79,9 +80,9 @@ defmodule DNS.Message.Record.Data.CAATest do
       tag = "issuewild"
       value = "digicert.com"
       raw = <<flags::8, byte_size(tag)::8, tag::binary, value::binary>>
-      
+
       caa = CAA.from_iodata(raw)
-      
+
       assert caa.data == {flags, tag, value}
     end
 
@@ -90,9 +91,9 @@ defmodule DNS.Message.Record.Data.CAATest do
       tag = "iodef"
       value = "mailto:security@example.com"
       raw = <<flags::8, byte_size(tag)::8, tag::binary, value::binary>>
-      
+
       caa = CAA.from_iodata(raw)
-      
+
       assert caa.data == {flags, tag, value}
     end
 
@@ -101,9 +102,9 @@ defmodule DNS.Message.Record.Data.CAATest do
       tag = "issue"
       value = ""
       raw = <<flags::8, byte_size(tag)::8, tag::binary>>
-      
+
       caa = CAA.from_iodata(raw)
-      
+
       assert caa.data == {flags, tag, value}
       assert caa.rdlength == 1 + 1 + byte_size(tag) + 0
     end
@@ -113,9 +114,9 @@ defmodule DNS.Message.Record.Data.CAATest do
       tag = "issue"
       value = "ca.example.net; policy=ev; validationmethods=dns-01"
       raw = <<flags::8, byte_size(tag)::8, tag::binary, value::binary>>
-      
+
       caa = CAA.from_iodata(raw)
-      
+
       assert caa.data == {flags, tag, value}
     end
   end
@@ -126,11 +127,11 @@ defmodule DNS.Message.Record.Data.CAATest do
       tag = "issue"
       value = "letsencrypt.org"
       caa = CAA.new({flags, tag, value})
-      
+
       iodata = DNS.Parameter.to_iodata(caa)
       expected_size = 1 + 1 + byte_size(tag) + byte_size(value)
       expected = <<expected_size::16, flags::8, byte_size(tag)::8, tag::binary, value::binary>>
-      
+
       assert iodata == expected
     end
 
@@ -139,11 +140,11 @@ defmodule DNS.Message.Record.Data.CAATest do
       tag = "issuewild"
       value = "digicert.com"
       caa = CAA.new({flags, tag, value})
-      
+
       iodata = DNS.Parameter.to_iodata(caa)
       expected_size = 1 + 1 + byte_size(tag) + byte_size(value)
       expected = <<expected_size::16, flags::8, byte_size(tag)::8, tag::binary, value::binary>>
-      
+
       assert iodata == expected
     end
 
@@ -152,10 +153,10 @@ defmodule DNS.Message.Record.Data.CAATest do
       tag = "issue"
       value = ""
       caa = CAA.new({flags, tag, value})
-      
+
       iodata = DNS.Parameter.to_iodata(caa)
       expected = <<7::16, flags::8, byte_size(tag)::8, tag::binary>>
-      
+
       assert iodata == expected
     end
   end
@@ -166,9 +167,9 @@ defmodule DNS.Message.Record.Data.CAATest do
       tag = "issue"
       value = "letsencrypt.org"
       caa = CAA.new({flags, tag, value})
-      
+
       str = to_string(caa)
-      
+
       assert str == "#{flags} #{tag} \"#{value}\""
     end
 
@@ -177,9 +178,9 @@ defmodule DNS.Message.Record.Data.CAATest do
       tag = "issuewild"
       value = "digicert.com"
       caa = CAA.new({flags, tag, value})
-      
+
       str = to_string(caa)
-      
+
       assert str == "#{flags} #{tag} \"#{value}\""
     end
 
@@ -188,9 +189,9 @@ defmodule DNS.Message.Record.Data.CAATest do
       tag = "iodef"
       value = "mailto:security@example.com"
       caa = CAA.new({flags, tag, value})
-      
+
       str = to_string(caa)
-      
+
       assert str == "#{flags} #{tag} \"#{value}\""
     end
 
@@ -199,9 +200,9 @@ defmodule DNS.Message.Record.Data.CAATest do
       tag = "issue"
       value = ""
       caa = CAA.new({flags, tag, value})
-      
+
       str = to_string(caa)
-      
+
       assert str == "#{flags} #{tag} \"\""
     end
   end

@@ -37,7 +37,7 @@ defmodule DNS.Message.Record.Data.NSEC3 do
   def new({hash_algorithm, flags, iterations, salt, next_hashed_owner_name, type_bit_maps}) do
     salt_length = byte_size(salt)
     hash_length = byte_size(next_hashed_owner_name)
-    
+
     raw = <<
       hash_algorithm::8,
       flags::8,
@@ -48,7 +48,7 @@ defmodule DNS.Message.Record.Data.NSEC3 do
       next_hashed_owner_name::binary,
       type_bit_maps::binary
     >>
-    
+
     %__MODULE__{
       raw: raw,
       data: {hash_algorithm, flags, iterations, salt, next_hashed_owner_name, type_bit_maps},
@@ -68,7 +68,7 @@ defmodule DNS.Message.Record.Data.NSEC3 do
       next_hashed_owner_name::binary-size(hash_length),
       type_bit_maps::binary
     >> = raw
-    
+
     %__MODULE__{
       raw: raw,
       data: {hash_algorithm, flags, iterations, salt, next_hashed_owner_name, type_bit_maps},
@@ -80,11 +80,11 @@ defmodule DNS.Message.Record.Data.NSEC3 do
     @impl true
     def to_iodata(%DNS.Message.Record.Data.NSEC3{data: data}) do
       {hash_algorithm, flags, iterations, salt, next_hashed_owner_name, type_bit_maps} = data
-      
+
       salt_length = byte_size(salt)
       hash_length = byte_size(next_hashed_owner_name)
       size = 1 + 1 + 2 + 1 + salt_length + 1 + hash_length + byte_size(type_bit_maps)
-      
+
       <<
         size::16,
         hash_algorithm::8,

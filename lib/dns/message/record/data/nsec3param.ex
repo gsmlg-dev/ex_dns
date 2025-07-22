@@ -31,7 +31,7 @@ defmodule DNS.Message.Record.Data.NSEC3PARAM do
   @spec new({integer(), integer(), integer(), binary()}) :: t()
   def new({hash_algorithm, flags, iterations, salt}) do
     salt_length = byte_size(salt)
-    
+
     raw = <<
       hash_algorithm::8,
       flags::8,
@@ -39,7 +39,7 @@ defmodule DNS.Message.Record.Data.NSEC3PARAM do
       salt_length::8,
       salt::binary
     >>
-    
+
     %__MODULE__{
       raw: raw,
       data: {hash_algorithm, flags, iterations, salt},
@@ -56,7 +56,7 @@ defmodule DNS.Message.Record.Data.NSEC3PARAM do
       salt_length::8,
       salt::binary-size(salt_length)
     >> = raw
-    
+
     %__MODULE__{
       raw: raw,
       data: {hash_algorithm, flags, iterations, salt},
@@ -68,10 +68,10 @@ defmodule DNS.Message.Record.Data.NSEC3PARAM do
     @impl true
     def to_iodata(%DNS.Message.Record.Data.NSEC3PARAM{data: data}) do
       {hash_algorithm, flags, iterations, salt} = data
-      
+
       salt_length = byte_size(salt)
       size = 1 + 1 + 2 + 1 + salt_length
-      
+
       <<
         size::16,
         hash_algorithm::8,

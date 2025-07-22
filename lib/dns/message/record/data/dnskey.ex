@@ -17,7 +17,8 @@ defmodule DNS.Message.Record.Data.DNSKEY do
           type: RRType.t(),
           rdlength: 0..65535,
           raw: bitstring(),
-          data: {flags :: 0..65535, protocol :: 0..255, algorithm :: 0..255, public_key :: binary()}
+          data:
+            {flags :: 0..65535, protocol :: 0..255, algorithm :: 0..255, public_key :: binary()}
         }
 
   defstruct raw: nil, type: RRType.new(48), rdlength: nil, data: nil
@@ -25,6 +26,7 @@ defmodule DNS.Message.Record.Data.DNSKEY do
   @spec new({integer(), integer(), integer(), binary()}) :: t()
   def new({flags, protocol, algorithm, public_key}) do
     raw = <<flags::16, protocol::8, algorithm::8, public_key::binary>>
+
     %__MODULE__{
       raw: raw,
       data: {flags, protocol, algorithm, public_key},
@@ -35,6 +37,7 @@ defmodule DNS.Message.Record.Data.DNSKEY do
   @spec from_iodata(bitstring(), bitstring() | nil) :: t()
   def from_iodata(raw, _message \\ nil) do
     <<flags::16, protocol::8, algorithm::8, public_key::binary>> = raw
+
     %__MODULE__{
       raw: raw,
       data: {flags, protocol, algorithm, public_key},

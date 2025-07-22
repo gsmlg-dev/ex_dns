@@ -23,7 +23,7 @@ defmodule DNS.Message.EDNS0.Option.Expire do
   @type t :: %__MODULE__{
           code: OptionCode.t(),
           length: 4,
-          data: expire_time :: 0..4294967295
+          data: expire_time :: 0..4_294_967_295
         }
 
   defstruct code: OptionCode.new(9), length: 4, data: nil
@@ -33,9 +33,7 @@ defmodule DNS.Message.EDNS0.Option.Expire do
     %__MODULE__{data: expire_time}
   end
 
-  def from_iodata(
-        <<9::16, 4::16, expire_time::32>>
-      ) do
+  def from_iodata(<<9::16, 4::16, expire_time::32>>) do
     %__MODULE__{data: expire_time}
   end
 

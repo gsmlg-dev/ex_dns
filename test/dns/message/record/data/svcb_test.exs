@@ -7,55 +7,99 @@ defmodule DNS.Message.Record.Data.SVCBTest do
     test "creates SVCB record with valid parameters" do
       svc_priority = 1
       target_name = Domain.new("example.com")
-      svc_params = <<0x00, 0x01, 0x00, 0x04, 192, 168, 1, 1>> # alpn="h2"
-      
+      # alpn="h2"
+      svc_params = <<0x00, 0x01, 0x00, 0x04, 192, 168, 1, 1>>
+
       svcb = SVCB.new({svc_priority, target_name, svc_params})
-      
+
       assert svcb.type.value == <<64::16>>
       assert svcb.data == {svc_priority, target_name, svc_params}
-      
+
       target_name_binary = DNS.to_iodata(target_name)
+
       expected_raw = <<
         svc_priority::16,
         target_name_binary::binary,
         svc_params::binary
       >>
-      
+
       assert svcb.raw == expected_raw
       assert svcb.rdlength == 2 + byte_size(target_name_binary) + byte_size(svc_params)
     end
 
     test "creates SVCB record with AliasMode" do
-      svc_priority = 0 # AliasMode
+      # AliasMode
+      svc_priority = 0
       target_name = Domain.new("target.example.com")
-      svc_params = <<>> # Empty for AliasMode
-      
+      # Empty for AliasMode
+      svc_params = <<>>
+
       svcb = SVCB.new({svc_priority, target_name, svc_params})
-      
+
       assert svcb.data == {svc_priority, target_name, svc_params}
     end
 
     test "creates SVCB record with ServiceMode" do
-      svc_priority = 16 # ServiceMode
-      target_name = Domain.new(".") # Root (no alternative)
+      # ServiceMode
+      svc_priority = 16
+      # Root (no alternative)
+      target_name = Domain.new(".")
       svc_params = <<0x00, 0x01, 0x00, 0x04, 192, 168, 1, 1>>
-      
+
       svcb = SVCB.new({svc_priority, target_name, svc_params})
-      
+
       assert svcb.data == {svc_priority, target_name, svc_params}
     end
 
     test "handles SVCB record with complex parameters" do
       svc_priority = 1
       target_name = Domain.new("svc.example.net")
+
       svc_params = <<
-        0x00, 0x01, 0x00, 0x05, 104, 116, 116, 112, 115, # alpn="https"
-        0x00, 0x03, 0x00, 0x04, 192, 168, 1, 100, # ipv4hint
-        0x00, 0x04, 0x00, 0x10, 0x20, 0x01, 0x0d, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 # ipv6hint
+        # alpn="https"
+        0x00,
+        0x01,
+        0x00,
+        0x05,
+        104,
+        116,
+        116,
+        112,
+        115,
+        # ipv4hint
+        0x00,
+        0x03,
+        0x00,
+        0x04,
+        192,
+        168,
+        1,
+        100,
+        # ipv6hint
+        0x00,
+        0x04,
+        0x00,
+        0x10,
+        0x20,
+        0x01,
+        0x0D,
+        0xB8,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x01
       >>
-      
+
       svcb = SVCB.new({svc_priority, target_name, svc_params})
-      
+
       assert svcb.data == {svc_priority, target_name, svc_params}
     end
 
@@ -63,9 +107,9 @@ defmodule DNS.Message.Record.Data.SVCBTest do
       svc_priority = 1
       target_name = Domain.new("")
       svc_params = <<>>
-      
+
       svcb = SVCB.new({svc_priority, target_name, svc_params})
-      
+
       assert svcb.type.value == <<64::16>>
       assert svcb.data == {svc_priority, target_name, svc_params}
     end
@@ -75,17 +119,19 @@ defmodule DNS.Message.Record.Data.SVCBTest do
     test "parses SVCB record correctly" do
       svc_priority = 1
       target_name = Domain.new("example.com")
-      svc_params = <<0x00, 0x01, 0x00, 0x04, 104, 116, 116, 112>> # alpn="http"
-      
+      # alpn="http"
+      svc_params = <<0x00, 0x01, 0x00, 0x04, 104, 116, 116, 112>>
+
       target_name_binary = DNS.to_iodata(target_name)
+
       raw = <<
         svc_priority::16,
         target_name_binary::binary,
         svc_params::binary
       >>
-      
+
       svcb = SVCB.from_iodata(raw)
-      
+
       assert svcb.type.value == <<64::16>>
       assert svcb.data == {svc_priority, target_name, svc_params}
       assert svcb.raw == raw
@@ -95,15 +141,16 @@ defmodule DNS.Message.Record.Data.SVCBTest do
       svc_priority = 0
       target_name = Domain.new("target.example.com")
       svc_params = <<>>
-      
+
       target_name_binary = DNS.to_iodata(target_name)
+
       raw = <<
         svc_priority::16,
         target_name_binary::binary
       >>
-      
+
       svcb = SVCB.from_iodata(raw)
-      
+
       assert svcb.data == {svc_priority, target_name, svc_params}
     end
 
@@ -111,16 +158,17 @@ defmodule DNS.Message.Record.Data.SVCBTest do
       svc_priority = 16
       target_name = Domain.new(".")
       svc_params = <<0x00, 0x01, 0x00, 0x05, 104, 116, 116, 112, 115>>
-      
+
       target_name_binary = DNS.to_iodata(target_name)
+
       raw = <<
         svc_priority::16,
         target_name_binary::binary,
         svc_params::binary
       >>
-      
+
       svcb = SVCB.from_iodata(raw)
-      
+
       assert svcb.data == {svc_priority, target_name, svc_params}
     end
 
@@ -128,15 +176,16 @@ defmodule DNS.Message.Record.Data.SVCBTest do
       svc_priority = 1
       target_name = Domain.new("")
       svc_params = <<>>
-      
+
       target_name_binary = DNS.to_iodata(target_name)
+
       raw = <<
         svc_priority::16,
         target_name_binary::binary
       >>
-      
+
       svcb = SVCB.from_iodata(raw)
-      
+
       assert svcb.data == {svc_priority, target_name, svc_params}
     end
   end
@@ -146,15 +195,16 @@ defmodule DNS.Message.Record.Data.SVCBTest do
       svc_priority = 1
       target_name = Domain.new("example.com")
       svc_params = <<0x00, 0x01, 0x00, 0x04, 104, 116, 116, 112>>
-      
+
       svcb = SVCB.new({svc_priority, target_name, svc_params})
-      
+
       iodata = DNS.Parameter.to_iodata(svcb)
       target_name_binary = DNS.to_iodata(target_name)
       expected_size = 2 + byte_size(target_name_binary) + byte_size(svc_params)
-      
-      expected = <<expected_size::16, svc_priority::16, target_name_binary::binary, svc_params::binary>>
-      
+
+      expected =
+        <<expected_size::16, svc_priority::16, target_name_binary::binary, svc_params::binary>>
+
       assert iodata == expected
     end
 
@@ -162,15 +212,15 @@ defmodule DNS.Message.Record.Data.SVCBTest do
       svc_priority = 0
       target_name = Domain.new("target.example.com")
       svc_params = <<>>
-      
+
       svcb = SVCB.new({svc_priority, target_name, svc_params})
-      
+
       iodata = DNS.Parameter.to_iodata(svcb)
       target_name_binary = DNS.to_iodata(target_name)
       expected_size = 2 + byte_size(target_name_binary)
-      
+
       expected = <<expected_size::16, svc_priority::16, target_name_binary::binary>>
-      
+
       assert iodata == expected
     end
 
@@ -178,15 +228,15 @@ defmodule DNS.Message.Record.Data.SVCBTest do
       svc_priority = 1
       target_name = Domain.new("")
       svc_params = <<>>
-      
+
       svcb = SVCB.new({svc_priority, target_name, svc_params})
-      
+
       iodata = DNS.Parameter.to_iodata(svcb)
       target_name_binary = DNS.to_iodata(target_name)
       expected_size = 2 + byte_size(target_name_binary)
-      
+
       expected = <<expected_size::16, svc_priority::16, target_name_binary::binary>>
-      
+
       assert iodata == expected
     end
   end
@@ -196,11 +246,11 @@ defmodule DNS.Message.Record.Data.SVCBTest do
       svc_priority = 1
       target_name = Domain.new("example.com")
       svc_params = <<0x00, 0x01, 0x00, 0x04, 104, 116, 116, 112>>
-      
+
       svcb = SVCB.new({svc_priority, target_name, svc_params})
-      
+
       str = to_string(svcb)
-      
+
       assert str == "#{svc_priority} #{target_name} #{svc_params}"
     end
 
@@ -208,11 +258,11 @@ defmodule DNS.Message.Record.Data.SVCBTest do
       svc_priority = 0
       target_name = Domain.new("target.example.com")
       svc_params = <<>>
-      
+
       svcb = SVCB.new({svc_priority, target_name, svc_params})
-      
+
       str = to_string(svcb)
-      
+
       assert str == "#{svc_priority} #{target_name} #{svc_params}"
     end
 
@@ -220,11 +270,11 @@ defmodule DNS.Message.Record.Data.SVCBTest do
       svc_priority = 16
       target_name = Domain.new(".")
       svc_params = <<0x00, 0x01, 0x00, 0x05, 104, 116, 116, 112, 115>>
-      
+
       svcb = SVCB.new({svc_priority, target_name, svc_params})
-      
+
       str = to_string(svcb)
-      
+
       assert str == "#{svc_priority} #{target_name} #{svc_params}"
     end
   end

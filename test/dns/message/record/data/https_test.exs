@@ -7,55 +7,100 @@ defmodule DNS.Message.Record.Data.HTTPSTest do
     test "creates HTTPS record with valid parameters" do
       svc_priority = 1
       target_name = Domain.new("example.com")
-      svc_params = <<0x00, 0x01, 0x00, 0x04, 104, 116, 116, 112>> # alpn="http"
-      
+      # alpn="http"
+      svc_params = <<0x00, 0x01, 0x00, 0x04, 104, 116, 116, 112>>
+
       https = HTTPS.new({svc_priority, target_name, svc_params})
-      
+
       assert https.type.value == <<65::16>>
       assert https.data == {svc_priority, target_name, svc_params}
-      
+
       target_name_binary = DNS.to_iodata(target_name)
+
       expected_raw = <<
         svc_priority::16,
         target_name_binary::binary,
         svc_params::binary
       >>
-      
+
       assert https.raw == expected_raw
       assert https.rdlength == 2 + byte_size(target_name_binary) + byte_size(svc_params)
     end
 
     test "creates HTTPS record with AliasMode" do
-      svc_priority = 0 # AliasMode
+      # AliasMode
+      svc_priority = 0
       target_name = Domain.new("target.example.com")
-      svc_params = <<>> # Empty for AliasMode
-      
+      # Empty for AliasMode
+      svc_params = <<>>
+
       https = HTTPS.new({svc_priority, target_name, svc_params})
-      
+
       assert https.data == {svc_priority, target_name, svc_params}
     end
 
     test "creates HTTPS record with ServiceMode" do
-      svc_priority = 16 # ServiceMode
-      target_name = Domain.new(".") # Root (no alternative)
-      svc_params = <<0x00, 0x01, 0x00, 0x05, 104, 116, 116, 112, 115>> # alpn="https"
-      
+      # ServiceMode
+      svc_priority = 16
+      # Root (no alternative)
+      target_name = Domain.new(".")
+      # alpn="https"
+      svc_params = <<0x00, 0x01, 0x00, 0x05, 104, 116, 116, 112, 115>>
+
       https = HTTPS.new({svc_priority, target_name, svc_params})
-      
+
       assert https.data == {svc_priority, target_name, svc_params}
     end
 
     test "handles HTTPS record with complex parameters" do
       svc_priority = 1
       target_name = Domain.new("svc.example.net")
+
       svc_params = <<
-        0x00, 0x01, 0x00, 0x05, 104, 116, 116, 112, 115, # alpn="https"
-        0x00, 0x03, 0x00, 0x04, 192, 168, 1, 100, # ipv4hint
-        0x00, 0x04, 0x00, 0x10, 0x20, 0x01, 0x0d, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 # ipv6hint
+        # alpn="https"
+        0x00,
+        0x01,
+        0x00,
+        0x05,
+        104,
+        116,
+        116,
+        112,
+        115,
+        # ipv4hint
+        0x00,
+        0x03,
+        0x00,
+        0x04,
+        192,
+        168,
+        1,
+        100,
+        # ipv6hint
+        0x00,
+        0x04,
+        0x00,
+        0x10,
+        0x20,
+        0x01,
+        0x0D,
+        0xB8,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x01
       >>
-      
+
       https = HTTPS.new({svc_priority, target_name, svc_params})
-      
+
       assert https.data == {svc_priority, target_name, svc_params}
     end
 
@@ -63,9 +108,9 @@ defmodule DNS.Message.Record.Data.HTTPSTest do
       svc_priority = 1
       target_name = Domain.new("")
       svc_params = <<>>
-      
+
       https = HTTPS.new({svc_priority, target_name, svc_params})
-      
+
       assert https.type.value == <<65::16>>
       assert https.data == {svc_priority, target_name, svc_params}
     end
@@ -75,17 +120,19 @@ defmodule DNS.Message.Record.Data.HTTPSTest do
     test "parses HTTPS record correctly" do
       svc_priority = 1
       target_name = Domain.new("example.com")
-      svc_params = <<0x00, 0x01, 0x00, 0x05, 104, 116, 116, 112, 115>> # alpn="https"
-      
+      # alpn="https"
+      svc_params = <<0x00, 0x01, 0x00, 0x05, 104, 116, 116, 112, 115>>
+
       target_name_binary = DNS.to_iodata(target_name)
+
       raw = <<
         svc_priority::16,
         target_name_binary::binary,
         svc_params::binary
       >>
-      
+
       https = HTTPS.from_iodata(raw)
-      
+
       assert https.type.value == <<65::16>>
       assert https.data == {svc_priority, target_name, svc_params}
       assert https.raw == raw
@@ -95,15 +142,16 @@ defmodule DNS.Message.Record.Data.HTTPSTest do
       svc_priority = 0
       target_name = Domain.new("target.example.com")
       svc_params = <<>>
-      
+
       target_name_binary = DNS.to_iodata(target_name)
+
       raw = <<
         svc_priority::16,
         target_name_binary::binary
       >>
-      
+
       https = HTTPS.from_iodata(raw)
-      
+
       assert https.data == {svc_priority, target_name, svc_params}
     end
 
@@ -111,16 +159,17 @@ defmodule DNS.Message.Record.Data.HTTPSTest do
       svc_priority = 16
       target_name = Domain.new(".")
       svc_params = <<0x00, 0x01, 0x00, 0x05, 104, 116, 116, 112, 115>>
-      
+
       target_name_binary = DNS.to_iodata(target_name)
+
       raw = <<
         svc_priority::16,
         target_name_binary::binary,
         svc_params::binary
       >>
-      
+
       https = HTTPS.from_iodata(raw)
-      
+
       assert https.data == {svc_priority, target_name, svc_params}
     end
 
@@ -128,15 +177,16 @@ defmodule DNS.Message.Record.Data.HTTPSTest do
       svc_priority = 1
       target_name = Domain.new("")
       svc_params = <<>>
-      
+
       target_name_binary = DNS.to_iodata(target_name)
+
       raw = <<
         svc_priority::16,
         target_name_binary::binary
       >>
-      
+
       https = HTTPS.from_iodata(raw)
-      
+
       assert https.data == {svc_priority, target_name, svc_params}
     end
   end
@@ -146,15 +196,16 @@ defmodule DNS.Message.Record.Data.HTTPSTest do
       svc_priority = 1
       target_name = Domain.new("example.com")
       svc_params = <<0x00, 0x01, 0x00, 0x05, 104, 116, 116, 112, 115>>
-      
+
       https = HTTPS.new({svc_priority, target_name, svc_params})
-      
+
       iodata = DNS.Parameter.to_iodata(https)
       target_name_binary = DNS.to_iodata(target_name)
       expected_size = 2 + byte_size(target_name_binary) + byte_size(svc_params)
-      
-      expected = <<expected_size::16, svc_priority::16, target_name_binary::binary, svc_params::binary>>
-      
+
+      expected =
+        <<expected_size::16, svc_priority::16, target_name_binary::binary, svc_params::binary>>
+
       assert iodata == expected
     end
 
@@ -162,15 +213,15 @@ defmodule DNS.Message.Record.Data.HTTPSTest do
       svc_priority = 0
       target_name = Domain.new("target.example.com")
       svc_params = <<>>
-      
+
       https = HTTPS.new({svc_priority, target_name, svc_params})
-      
+
       iodata = DNS.Parameter.to_iodata(https)
       target_name_binary = DNS.to_iodata(target_name)
       expected_size = 2 + byte_size(target_name_binary)
-      
+
       expected = <<expected_size::16, svc_priority::16, target_name_binary::binary>>
-      
+
       assert iodata == expected
     end
 
@@ -178,15 +229,15 @@ defmodule DNS.Message.Record.Data.HTTPSTest do
       svc_priority = 1
       target_name = Domain.new("")
       svc_params = <<>>
-      
+
       https = HTTPS.new({svc_priority, target_name, svc_params})
-      
+
       iodata = DNS.Parameter.to_iodata(https)
       target_name_binary = DNS.to_iodata(target_name)
       expected_size = 2 + byte_size(target_name_binary)
-      
+
       expected = <<expected_size::16, svc_priority::16, target_name_binary::binary>>
-      
+
       assert iodata == expected
     end
   end
@@ -196,36 +247,49 @@ defmodule DNS.Message.Record.Data.HTTPSTest do
       svc_priority = 1
       target_name = Domain.new("example.com")
       svc_params = <<0x00, 0x01, 0x00, 0x05, 104, 116, 116, 112, 115>>
-      
+
       https = HTTPS.new({svc_priority, target_name, svc_params})
-      
+
       str = to_string(https)
-      
-      assert str == "#{svc_priority} #{target_name} #{svc_params}"
+
+      assert str == "#{svc_priority} #{target_name} alpn=https"
     end
 
     test "converts AliasMode HTTPS to string" do
       svc_priority = 0
       target_name = Domain.new("target.example.com")
       svc_params = <<>>
-      
+
       https = HTTPS.new({svc_priority, target_name, svc_params})
-      
+
       str = to_string(https)
-      
-      assert str == "#{svc_priority} #{target_name} #{svc_params}"
+
+      assert str == "#{svc_priority} #{target_name}"
     end
 
     test "converts HTTPS with root target to string" do
       svc_priority = 16
       target_name = Domain.new(".")
       svc_params = <<0x00, 0x01, 0x00, 0x05, 104, 116, 116, 112, 115>>
-      
+
       https = HTTPS.new({svc_priority, target_name, svc_params})
-      
+
       str = to_string(https)
-      
-      assert str == "#{svc_priority} #{target_name} #{svc_params}"
+
+      assert str == "#{svc_priority} #{target_name} alpn=https"
     end
   end
+
+  # test "parse message" do
+  #   message = DNS.Message.from_iodata(@message)
+  #   [r1, r2] = message.anlist
+  #   assert r1.type == DNS.ResourceRecordType.new(46)
+  #   assert r2.type == DNS.ResourceRecordType.new(65)
+  #   IO.puts(r2)
+  #   IO.puts(message.header)
+  #   for q <- message.qdlist, do: IO.puts(q)
+  #   for an <- message.anlist, do: IO.puts(an)
+  #   for ns <- message.nslist, do: IO.puts(ns)
+  #   for ar <- message.arlist, do: IO.puts(ar)
+  # end
 end

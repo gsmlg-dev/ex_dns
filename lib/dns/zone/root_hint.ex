@@ -84,11 +84,12 @@ defmodule DNS.Zone.RootHint do
       glue_a = glue |> Enum.filter(fn record -> record[:type] == RRType.new(:a) end)
       glue_aaaa = glue |> Enum.filter(fn record -> record[:type] == RRType.new(:aaaa) end)
 
-      {to_string(name), %{
-        name: name,
-        ipv4: glue_a |> Enum.map(fn record -> record[:rdata] end),
-        ipv6: glue_aaaa |> Enum.map(fn record -> record[:rdata] end)
-      }}
+      {to_string(name),
+       %{
+         name: name,
+         ipv4: glue_a |> Enum.map(fn record -> record[:rdata] end),
+         ipv6: glue_aaaa |> Enum.map(fn record -> record[:rdata] end)
+       }}
     end)
   end
 end

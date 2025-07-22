@@ -23,7 +23,7 @@ defmodule DNS.Message.EDNS0.Option.UpdateLease do
   @type t :: %__MODULE__{
           code: OptionCode.t(),
           length: 4,
-          data: lease_lifetime :: 0..4294967295
+          data: lease_lifetime :: 0..4_294_967_295
         }
 
   defstruct code: OptionCode.new(2), length: 4, data: nil

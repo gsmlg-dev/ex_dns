@@ -26,7 +26,7 @@ defmodule DNS.Message.EDNS0.Option.ExtendedDNSErrorTest do
     test "parses ExtendedDNSError option from binary" do
       info_code = 1
       extra_text = "DNSSEC validation failed"
-      binary = <<15::16, (2 + byte_size(extra_text))::16, info_code::16, extra_text::binary>>
+      binary = <<15::16, 2 + byte_size(extra_text)::16, info_code::16, extra_text::binary>>
       option = ExtendedDNSError.from_iodata(binary)
       assert option.code.value == <<15::16>>
       assert option.length == 2 + byte_size(extra_text)
@@ -49,7 +49,9 @@ defmodule DNS.Message.EDNS0.Option.ExtendedDNSErrorTest do
       extra_text = "test error"
       option = ExtendedDNSError.new({info_code, extra_text})
       iodata = DNS.Parameter.to_iodata(option)
-      assert iodata == <<15::16, (2 + byte_size(extra_text))::16, info_code::16, extra_text::binary>>
+
+      assert iodata ==
+               <<15::16, 2 + byte_size(extra_text)::16, info_code::16, extra_text::binary>>
     end
   end
 

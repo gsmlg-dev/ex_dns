@@ -27,6 +27,7 @@ defmodule DNS.Message.Record.Data.CAA do
   def new({flags, tag, value}) do
     tag_length = byte_size(tag)
     raw = <<flags::8, tag_length::8, tag::binary, value::binary>>
+
     %__MODULE__{
       raw: raw,
       data: {flags, tag, value},
@@ -37,6 +38,7 @@ defmodule DNS.Message.Record.Data.CAA do
   @spec from_iodata(bitstring(), bitstring() | nil) :: t()
   def from_iodata(raw, _message \\ nil) do
     <<flags::8, tag_length::8, tag::binary-size(tag_length), value::binary>> = raw
+
     %__MODULE__{
       raw: raw,
       data: {flags, tag, value},
@@ -50,7 +52,7 @@ defmodule DNS.Message.Record.Data.CAA do
       {flags, tag, value} = data
       tag_length = byte_size(tag)
       size = 2 + tag_length + byte_size(value)
-      
+
       <<size::16, flags::8, tag_length::8, tag::binary, value::binary>>
     end
   end
