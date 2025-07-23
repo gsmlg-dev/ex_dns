@@ -28,3 +28,4 @@ ex_dns-*.tar
 # Temporary files, for example, from tests.
 /tmp/
 /debug_*
+/test_*
