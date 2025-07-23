@@ -124,7 +124,7 @@ defmodule DNS.Zone do
   ### Parsing Zone Files
   ```elixir
   # Load zone from BIND format file
-  {:ok, zone} = DNS.Zone.Loader.load_zone_from_file("example.com.zone")
+  {:ok, zone} = DNS.Zone.Loader.load_zone_from_file("example.com", "example.com.zone")
 
   # Load zone from string
   zone_content = \"\"\"
