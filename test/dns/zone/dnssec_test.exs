@@ -42,7 +42,7 @@ defmodule DNS.Zone.DNSSECTest do
       {type_covered, algorithm, labels, _original_ttl, _expiration, _inception, _key_tag,
        _signers_name, _signature} = rrsig.data
 
-      assert type_covered == DNS.ResourceRecordType.new(:a)
+      assert type_covered == ResourceRecordType.new(:a)
       assert algorithm == 8
       assert labels == 2
     end

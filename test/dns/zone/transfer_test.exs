@@ -233,7 +233,7 @@ defmodule DNS.Zone.TransferTest do
       assert request.zone_name == zone_name
       assert request.transfer_type == :axfr
       assert is_nil(request.serial)
-      assert request.timestamp != nil
+      assert %DateTime{} = request.timestamp
     end
 
     test "create_transfer_request with IXFR and serial" do

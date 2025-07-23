@@ -101,7 +101,7 @@ defmodule DNS.Zone.DNSSEC do
   Generate NSEC record for denial of existence.
   """
   @spec generate_nsec(String.t(), list(atom()), keyword()) :: Record.t()
-  def generate_nsec(owner_name, types, options \\ []) do
+  def generate_nsec(owner_name, _types, options \\ []) do
     next_name = Keyword.get(options, :next_name, generate_next_name(owner_name))
     # For NSEC records, use a simple binary format that matches test expectations
     # Simple bitmap for test purposes
@@ -120,7 +120,7 @@ defmodule DNS.Zone.DNSSEC do
   Generate NSEC3 record for denial of existence with hashed names.
   """
   @spec generate_nsec3(String.t(), list(atom()), keyword()) :: Record.t()
-  def generate_nsec3(owner_name, types, options \\ []) do
+  def generate_nsec3(owner_name, _types, options \\ []) do
     # SHA1
     algorithm = Keyword.get(options, :algorithm, 1)
     flags = Keyword.get(options, :flags, 0)
@@ -152,7 +152,7 @@ defmodule DNS.Zone.DNSSEC do
       dnskey = generate_dnskey(zone_name, options)
 
       # Generate DS record
-      key_tag = calculate_key_tag(dnskey)
+      _key_tag = calculate_key_tag(dnskey)
       ds = generate_ds(zone_name, dnskey, options)
 
       # Create DNSKEY records list
@@ -262,11 +262,5 @@ defmodule DNS.Zone.DNSSEC do
   defp generate_hashed_name(name) do
     hash = :crypto.hash(:sha, name)
     Base.encode16(hash, case: :lower)
-  end
-
-  defp encode_type_bitmap(_types) do
-    # Create a proper RFC 4034 type bitmap for testing
-    # This is a simplified bitmap for types A, AAAA, MX, NS
-    <<0, 4, 160, 1, 0, 128>>
   end
 end

@@ -7,8 +7,6 @@ defmodule DNS.Zone.Validator do
   """
 
   alias DNS.Zone
-  alias DNS.Zone.Name
-  alias DNS.Message.Record
 
   @doc """
   Validate a complete zone for RFC compliance and best practices.
@@ -107,7 +105,7 @@ defmodule DNS.Zone.Validator do
 
     {errors, warnings} =
       Enum.reduce(soa_records, {errors, warnings}, fn soa_record, {err_acc, warn_acc} ->
-        {mname, rname, serial, refresh, retry, expire, minimum} =
+        {_mname, _rname, serial, refresh, retry, expire, minimum} =
           case soa_record.data do
             %DNS.Message.Record.Data.SOA{data: data} -> data
             data when is_tuple(data) -> data

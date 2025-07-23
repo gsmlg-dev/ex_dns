@@ -63,6 +63,7 @@ defmodule DNS.Zone.FileParserTest do
       file_path = Path.expand("data/root.zone", :code.priv_dir(:ex_dns))
       zone_content = File.read!(file_path)
       assert {:ok, zone} = DNS.Zone.FileParser.parse(zone_content)
+      assert %{} = zone
     end
   end
 end

@@ -114,7 +114,7 @@ defmodule DNS.Zone.EditorTest do
 
     test "remove_record removes matching records", %{zone_name: zone_name} do
       # First add a record
-      assert {:ok, zone} =
+      assert {:ok, _zone} =
                Editor.add_record(zone_name, :a,
                  name: "www.#{zone_name}",
                  ip: {192, 168, 1, 1}
@@ -134,7 +134,7 @@ defmodule DNS.Zone.EditorTest do
 
     test "update_record updates matching records", %{zone_name: zone_name} do
       # First add a record
-      assert {:ok, zone} =
+      assert {:ok, _zone} =
                Editor.add_record(zone_name, :a,
                  name: "www.#{zone_name}",
                  ip: {192, 168, 1, 1},
@@ -315,8 +315,8 @@ defmodule DNS.Zone.EditorTest do
       assert cloned_zone.type == :authoritative
 
       # Verify both zones exist
-      assert {:ok, source_zone} = Manager.get_zone(source_zone_name)
-      assert {:ok, cloned_zone} = Manager.get_zone(new_zone_name)
+      assert {:ok, _source_zone} = Manager.get_zone(source_zone_name)
+      assert {:ok, _cloned_zone} = Manager.get_zone(new_zone_name)
     end
 
     test "clone_zone returns error for non-existent source" do

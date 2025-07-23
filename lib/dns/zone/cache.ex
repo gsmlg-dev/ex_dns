@@ -193,7 +193,7 @@ defmodule DNS.Zone.Cache do
   def stats() do
     init()
 
-    now = System.system_time(:second)
+    _now = System.system_time(:second)
 
     zones = list_zones()
     total_entries = length(:ets.tab2list(@cache_table))

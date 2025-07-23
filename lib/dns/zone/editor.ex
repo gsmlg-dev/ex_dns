@@ -80,7 +80,7 @@ defmodule DNS.Zone.Editor do
             {:error, "Record validation failed: #{inspect(validation_result.errors)}"}
         end
 
-      {:error, reason} ->
+      {:error, _reason} ->
         {:error, "Zone not found: #{zone_name}"}
     end
   end
@@ -152,7 +152,7 @@ defmodule DNS.Zone.Editor do
           end
         end
 
-      {:error, reason} ->
+      {:error, _reason} ->
         {:error, "Zone not found: #{zone_name}"}
     end
   end
@@ -181,7 +181,7 @@ defmodule DNS.Zone.Editor do
 
         {:ok, formatted_records}
 
-      {:error, reason} ->
+      {:error, _reason} ->
         {:error, "Zone not found: #{zone_name}"}
     end
   end
@@ -216,7 +216,7 @@ defmodule DNS.Zone.Editor do
 
         {:ok, formatted_records}
 
-      {:error, reason} ->
+      {:error, _reason} ->
         {:error, "Zone not found: #{zone_name}"}
     end
   end
@@ -235,11 +235,11 @@ defmodule DNS.Zone.Editor do
             Manager.update_zone(zone_name, signed_zone)
             {:ok, signed_zone}
 
-          {:error, reason} ->
+          {:error, _reason} ->
             {:error, "DNSSEC signing failed: #{zone_name}"}
         end
 
-      {:error, reason} ->
+      {:error, _reason} ->
         {:error, "Zone not found: #{zone_name}"}
     end
   end
@@ -255,7 +255,7 @@ defmodule DNS.Zone.Editor do
       {:ok, zone} ->
         Validator.validate_zone(zone)
 
-      {:error, reason} ->
+      {:error, _reason} ->
         {:error, "Zone not found: #{zone_name}"}
     end
   end
@@ -529,7 +529,7 @@ defmodule DNS.Zone.Editor do
     end
   end
 
-  defp update_zone_names(source_zone, new_zone_name) do
+  defp update_zone_names(source_zone, _new_zone_name) do
     # Update all record names to use new zone name
     # This is a simplified implementation
     source_zone
