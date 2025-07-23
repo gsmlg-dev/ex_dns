@@ -78,12 +78,10 @@ jobs:
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
-          otp-version: 26
-          elixir-version: 1.17
+          otp-version: 27
+          elixir-version: 1.18
 
       - name: Install Deps
-        env:
-          MIX_ENV: prod
         run: |
           mix deps.get
           sed -i 's%@version "[0-9\.]\+"%@version "${{ github.event.inputs.release-version }}"%' mix.exs
@@ -91,7 +89,6 @@ jobs:
 
       - name: Publish to hex.pm
         env:
-          MIX_ENV: prod
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
         run: |
