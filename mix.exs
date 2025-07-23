@@ -33,10 +33,11 @@ defmodule DNS.MixProject do
 
   defp deps() do
     [
-      {:ex_doc, "~> 0.25", runtime: false},
+      {:tesla, "~> 1.0", runtime: false},
       {:machete, ">= 0.0.0", only: [:dev, :test]},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:credo, "~> 1.5", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
 
@@ -61,7 +62,7 @@ defmodule DNS.MixProject do
     [
       maintainers: ["Jonathan Gao"],
       licenses: ["MIT"],
-      files: ~w(lib LICENSE mix.exs README.md),
+      files: ~w(lib priv LICENSE mix.exs README.md),
       links: %{
         Github: @source_url,
         Changelog: "https://hexdocs.pm/ex_dns/changelog.html"

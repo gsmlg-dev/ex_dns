@@ -78,6 +78,10 @@ defmodule DNS.Class do
   def new(value) do
     %Class{value: value}
   end
+
+  def internet() do
+    new(1)
+  end
 end
 
 defimpl DNS.Parameter, for: DNS.Class do
@@ -104,5 +108,15 @@ defimpl String.Chars, for: DNS.Class do
       value when value == 2 or value in 5..253 or value in 256..65279 -> "Unassigned(#{value})"
       value when value in 65280..65534 -> "Reserved_for_Private_Use(#{value})"
     end
+  end
+end
+
+defimpl Inspect, for: DNS.Class do
+  import Inspect.Algebra
+
+  @impl true
+  def inspect(dns_class, _opts) do
+    value = String.Chars.to_string(dns_class)
+    concat(["#DNS.Class<", value, ">"])
   end
 end

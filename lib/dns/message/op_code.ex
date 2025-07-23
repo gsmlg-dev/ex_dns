@@ -36,43 +36,43 @@ defmodule DNS.Message.OpCode do
   # query is a standard query
   [RFC1035](https://tools.ietf.org/html/rfc1035)
   """
-  @spec query() :: 0
-  def query(), do: 0
+  @spec query() :: t()
+  def query(), do: new(0)
 
   @doc """
   # iquery is a non-standard extension to DNS that is used by the
   [DNS Zone Transfer Protocol](https://tools.ietf.org/html/rfc1996)
   """
-  @spec iquery() :: 1
-  def iquery(), do: 1
+  @spec iquery() :: t()
+  def iquery(), do: new(1)
 
   @doc """
   # status is a non-standard extension to DNS that is used by the
   [DNS Zone Transfer Protocol](https://tools.ietf.org/html/rfc1996)
   """
-  @spec status() :: 2
-  def status(), do: 2
+  @spec status() :: t()
+  def status(), do: new(2)
 
   @doc """
   # notify is a non-standard extension to DNS that is used by the
   [DNS Zone Transfer Protocol](https://tools.ietf.org/html/rfc1996)
   """
-  @spec notify() :: 4
-  def notify(), do: 4
+  @spec notify() :: t()
+  def notify(), do: new(4)
 
   @doc """
   # update is a non-standard extension to DNS that is used by the
   [Dynamic DNS Update](https://tools.ietf.org/html/rfc2136)
   """
-  @spec update() :: 5
-  def update(), do: 5
+  @spec update() :: t()
+  def update(), do: new(5)
 
   @doc """
   # dso is a non-standard extension to DNS that is used by the
   [DNS Stateful Operations (DSO)](https://tools.ietf.org/html/draft-sekar-dns-ultradns-00)
   """
-  @spec dso() :: 6
-  def dso(), do: 6
+  @spec dso() :: t()
+  def dso(), do: new(6)
 
   defimpl DNS.Parameter, for: DNS.Message.OpCode do
     @impl true

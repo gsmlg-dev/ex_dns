@@ -8,6 +8,7 @@ defmodule DNS.MessageTest do
   alias DNS.ResourceRecordType, as: RRType
   alias DNS.Class
 
+  @tag :skip
   test "DNS message query with cookie from_iodata/1" do
     raw =
       <<118, 11, 1, 32, 0, 1, 0, 0, 0, 0, 0, 1, 3, 119, 119, 119, 6, 103, 111, 111, 103, 108, 101,

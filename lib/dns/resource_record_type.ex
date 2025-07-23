@@ -145,6 +145,24 @@ defmodule DNS.ResourceRecordType do
       :aaaa -> new(28)
       :srv -> new(33)
       :nsec -> new(47)
+      :dnskey -> new(48)
+      :dhcid -> new(49)
+      :nsec3 -> new(50)
+      :nsec3param -> new(51)
+      :tlsa -> new(52)
+      :smimea -> new(53)
+      :hip -> new(55)
+      :cds -> new(59)
+      :cdnskey -> new(60)
+      :openpgpkey -> new(61)
+      :csync -> new(62)
+      :zonemd -> new(63)
+      :svcb -> new(64)
+      :https -> new(65)
+      :ds -> new(43)
+      :sshfp -> new(44)
+      :ipseckey -> new(45)
+      :rrsig -> new(46)
       _ -> throw("Unsupported atom RRType: #{value}")
     end
   end
@@ -162,8 +180,8 @@ defmodule DNS.ResourceRecordType do
 
   defimpl String.Chars, for: DNS.ResourceRecordType do
     @impl true
-    def to_string(rr_type) do
-      <<value::16>> = rr_type.value
+    def to_string(%ResourceRecordType{value: value} = _rtype) do
+      <<value::16>> = value
 
       case value do
         1 ->
@@ -449,6 +467,16 @@ defmodule DNS.ResourceRecordType do
         value when value in 65280..65534 ->
           "Private use(#{value})"
       end
+    end
+  end
+
+  defimpl Inspect, for: DNS.ResourceRecordType do
+    import Inspect.Algebra
+
+    @impl true
+    def inspect(rr_type, _opts) do
+      value = String.Chars.to_string(rr_type)
+      concat(["#DNS.ResourceRecordType<", value, ">"])
     end
   end
 end

@@ -135,4 +135,13 @@ defmodule DNS.Message.Domain do
       domain.value
     end
   end
+
+  defimpl Inspect, for: Domain do
+    import Inspect.Algebra
+
+    @impl true
+    def inspect(domain, _opts) do
+      concat(["#DNS.Domain<", domain.value, ">"])
+    end
+  end
 end

@@ -51,22 +51,25 @@ defmodule DNS.Message do
           # Authority list
           nslist: list(%Record{}),
           # Additional record list
-          arlist: list(%Record{})
+          arlist: list(%Record{}),
+          options: Keyword.t()
         }
 
   defstruct header: %Header{},
             qdlist: [],
             anlist: [],
             nslist: [],
-            arlist: []
+            arlist: [],
+            options: []
 
-  def new do
+  def new() do
     %__MODULE__{
       header: Header.new(),
       qdlist: [],
       anlist: [],
       nslist: [],
-      arlist: []
+      arlist: [],
+      options: []
     }
   end
 
@@ -90,6 +93,24 @@ defmodule DNS.Message do
       nslist: nslist,
       arlist: arlist
     }
+  end
+
+  def update_header_attr(%__MODULE__{header: header} = message, key, value) do
+    header = Map.put(header, key, value)
+    %{message | header: header}
+  end
+
+  def add_question(%__MODULE__{qdlist: qdlist, header: header} = message, %Question{} = question) do
+    %{message | qdlist: [question | qdlist], header: %{header | qdcount: header.qdcount + 1}}
+  end
+
+  def put_option(%__MODULE__{options: options} = message, key, value) do
+    options = Keyword.put(options, key, value)
+    %{message | options: options}
+  end
+
+  def get_option(%__MODULE__{options: options} = _message, key, default_value \\ nil) do
+    Keyword.get(options, key, default_value)
   end
 
   defimpl DNS.Parameter, for: DNS.Message do

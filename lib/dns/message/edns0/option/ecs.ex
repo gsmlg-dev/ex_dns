@@ -70,8 +70,8 @@ defmodule DNS.Message.EDNS0.Option.ECS do
 
   defstruct code: OptionCode.new(8), length: nil, data: nil
 
-  @spec new({:inet.ip4_address(), 0..32, 0..32}) :: <<_::32, _::_*8>>
-  @spec new({:inet.ip6_address(), 0..128, 0..128}) :: <<_::32, _::_*8>>
+  @spec new({:inet.ip4_address(), 0..32, 0..32}) :: t()
+  @spec new({:inet.ip6_address(), 0..128, 0..128}) :: t()
   def new({client_subnet, source_prefix, scope_prefix}) do
     raw = to_raw({client_subnet, source_prefix, scope_prefix})
     len = byte_size(raw)
@@ -184,8 +184,8 @@ defmodule DNS.Message.EDNS0.Option.ECS do
     end
   end
 
-  @spec to_raw({:inet.ip4_address(), 0..32, 0..32}) :: <<_::32, _::_*8>>
-  @spec to_raw({:inet.ip6_address(), 0..128, 0..128}) :: <<_::32, _::_*8>>
+  @spec to_raw({:inet.ip4_address(), 0..32, 0..32}) :: binary()
+  @spec to_raw({:inet.ip6_address(), 0..128, 0..128}) :: binary()
   def to_raw({client_subnet, source_prefix, scope_prefix}) do
     {family, addr} =
       if :inet.is_ipv4_address(client_subnet) do

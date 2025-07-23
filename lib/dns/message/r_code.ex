@@ -76,10 +76,24 @@ defmodule DNS.Message.RCode do
     %RCode{value: value}
   end
 
+  @spec extend(DNS.Message.RCode.t(), any()) :: DNS.Message.RCode.t()
   def extend(rcode = %RCode{}, extended) when is_integer(extended),
     do: extend(rcode, <<extended::8>>)
 
   def extend(rcode = %RCode{}, extended), do: %{rcode | extended: extended}
+
+  def no_error(), do: new(0)
+  def form_err(), do: new(1)
+  def serv_fail(), do: new(2)
+  def nx_domain(), do: new(3)
+  def not_imp(), do: new(4)
+  def refused(), do: new(5)
+  def yx_domain(), do: new(6)
+  def yx_rrset(), do: new(7)
+  def nx_rrset(), do: new(8)
+  def not_auth(), do: new(9)
+  def not_zone(), do: new(10)
+  def dso_type_ni(), do: new(11)
 
   defimpl DNS.Parameter, for: DNS.Message.RCode do
     @impl true
