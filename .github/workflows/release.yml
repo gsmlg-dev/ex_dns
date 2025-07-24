@@ -5,7 +5,7 @@ on:
       release-version:
         required: true
         description: 'The version of the release'
-        default: '0.1.0'
+        default: '0.4.0'
       git-ref:
         required: true
         description: 'The git revison of repo, branch, tag or commit'
@@ -27,6 +27,8 @@ jobs:
             otp: 27
 
     runs-on: ubuntu-latest
+    env:
+      MIX_ENV: test
 
     steps:
     - name: Checkout
@@ -41,8 +43,6 @@ jobs:
         elixir-version: ${{ matrix.elixir }}
 
     - name: Install dependencies
-      env:
-        MIX_ENV: test
       run: |
         mix deps.get
 
@@ -54,8 +54,6 @@ jobs:
 
     - name: Compile & lint dependencies
       run: mix compile --warnings-as-errors
-      env:
-        MIX_ENV: test
 
     - name: Run tests
       run: mix test
