@@ -7,7 +7,6 @@ defmodule DNS.Zone.Loader do
   """
 
   alias DNS.Zone
-  alias DNS.Zone.FileParser
 
   @doc """
   Load zones from a directory containing zone files.
@@ -42,11 +41,11 @@ defmodule DNS.Zone.Loader do
   Load a single zone from file.
   """
   @spec load_zone_from_file(String.t(), String.t()) :: {:ok, Zone.t()} | {:error, String.t()}
-  def load_zone_from_file(name, file_path) do
-    case FileParser.parse_file(file_path) do
-      {:ok, zone_data} ->
-        zone = create_zone_from_data(name, zone_data, file_path)
-        {:ok, zone}
+  def load_zone_from_file(_name, file_path) do
+    case Zone.parse_zone_file(file_path) do
+      {:ok, zone} ->
+        zone_with_source = %{zone | options: Keyword.put(zone.options, :source_file, file_path)}
+        {:ok, zone_with_source}
 
       {:error, reason} ->
         {:error, reason}
@@ -72,8 +71,7 @@ defmodule DNS.Zone.Loader do
   """
   @spec save_zone_to_file(Zone.t(), String.t()) :: :ok | {:error, String.t()}
   def save_zone_to_file(zone, file_path) do
-    zone_data = extract_zone_data(zone)
-    zone_content = FileParser.generate(zone_data)
+    zone_content = Zone.to_bind_format(zone)
 
     case File.write(file_path, zone_content) do
       :ok -> :ok
@@ -100,7 +98,7 @@ defmodule DNS.Zone.Loader do
 
   ## Private functions
 
-  defp create_zone_from_data(name, zone_data, source_file) do
+ defp create_zone_from_data(name, zone_data, source_file) do
     options = [
       origin: zone_data.origin,
       ttl: zone_data.ttl,

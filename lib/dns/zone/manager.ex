@@ -7,7 +7,6 @@ defmodule DNS.Zone.Manager do
   """
 
   alias DNS.Zone
-  alias DNS.Zone.FileParser
   alias DNS.Zone.Store
   alias DNS.Zone.Loader
 
@@ -19,10 +18,9 @@ defmodule DNS.Zone.Manager do
   Load a zone from a file.
   """
   @spec load_zone_from_file(zone_name, String.t()) :: {:ok, Zone.t()} | {:error, String.t()}
-  def load_zone_from_file(name, file_path) do
-    case FileParser.parse_file(file_path) do
-      {:ok, zone_data} ->
-        zone = create_zone_from_data(name, zone_data)
+  def load_zone_from_file(_name, file_path) do
+    case Zone.parse_zone_file(file_path) do
+      {:ok, zone} ->
         {:ok, zone}
 
       {:error, reason} ->
@@ -34,10 +32,9 @@ defmodule DNS.Zone.Manager do
   Load a zone from string content.
   """
   @spec load_zone_from_string(zone_name, String.t()) :: {:ok, Zone.t()} | {:error, String.t()}
-  def load_zone_from_string(name, content) do
-    case FileParser.parse(content) do
-      {:ok, zone_data} ->
-        zone = create_zone_from_data(name, zone_data)
+  def load_zone_from_string(_name, content) do
+    case Zone.parse_zone_string(content) do
+      {:ok, zone} ->
         {:ok, zone}
 
       {:error, reason} ->
@@ -149,18 +146,6 @@ defmodule DNS.Zone.Manager do
   end
 
   ## Private functions
-
-  defp create_zone_from_data(name, zone_data) do
-    options = [
-      origin: zone_data.origin,
-      ttl: zone_data.ttl,
-      soa: zone_data.soa,
-      records: zone_data.records,
-      source: :file
-    ]
-
-    Zone.new(name, :authoritative, options)
-  end
 
   defp validate_zone_name(name, errors) do
     name_str = if is_struct(name, DNS.Zone.Name), do: name.value, else: to_string(name)
