@@ -98,33 +98,4 @@ defmodule DNS.Zone.Loader do
 
   ## Private functions
 
-  defp create_zone_from_data(name, zone_data, source_file) do
-    options = [
-      origin: zone_data.origin,
-      ttl: zone_data.ttl,
-      soa: zone_data.soa,
-      records: zone_data.records,
-      includes: zone_data.includes,
-      directives: zone_data.directives,
-      errors: zone_data.errors,
-      warnings: zone_data.warnings,
-      source: :file,
-      source_file: source_file
-    ]
-
-    Zone.new(name, :authoritative, options)
-  end
-
-  defp extract_zone_data(zone) do
-    %{
-      origin: Keyword.get(zone.options, :origin),
-      ttl: Keyword.get(zone.options, :ttl, 3600),
-      soa: Keyword.get(zone.options, :soa),
-      records: Keyword.get(zone.options, :records, []),
-      includes: Keyword.get(zone.options, :includes, []),
-      directives: Keyword.get(zone.options, :directives, []),
-      errors: Keyword.get(zone.options, :errors, []),
-      warnings: Keyword.get(zone.options, :warnings, [])
-    }
-  end
 end
