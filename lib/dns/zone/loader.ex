@@ -98,7 +98,7 @@ defmodule DNS.Zone.Loader do
 
   ## Private functions
 
- defp create_zone_from_data(name, zone_data, source_file) do
+  defp create_zone_from_data(name, zone_data, source_file) do
     options = [
       origin: zone_data.origin,
       ttl: zone_data.ttl,

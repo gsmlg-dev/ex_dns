@@ -528,9 +528,14 @@ defmodule DNS.Zone do
   end
 
   defp generate_soa_record(%DNS.Zone.Parser.SOARecord{} = soa) do
-    primary_ns = if String.ends_with?(soa.primary_ns, "."), do: soa.primary_ns, else: soa.primary_ns <> "."
-    admin_email = if String.ends_with?(soa.admin_email, "."), do: soa.admin_email, else: soa.admin_email <> "."
-    
+    primary_ns =
+      if String.ends_with?(soa.primary_ns, "."), do: soa.primary_ns, else: soa.primary_ns <> "."
+
+    admin_email =
+      if String.ends_with?(soa.admin_email, "."),
+        do: soa.admin_email,
+        else: soa.admin_email <> "."
+
     lines = [
       "@ IN SOA #{primary_ns} #{admin_email} (",
       "    #{soa.serial} ; Serial",
