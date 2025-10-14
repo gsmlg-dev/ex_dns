@@ -6,53 +6,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is `ex_dns`, a pure Elixir DNS library that provides DNS protocol message parsing, zone management, and resource record handling. The library implements DNS message formats, resource records, and zone operations according to DNS RFC standards.
 
-## Development Commands
+## Architecture
 
-### Testing
-```bash
-mix test                                  # Run all tests
-mix test test/dns/message_test.exs       # Run specific test file
-mix test --include wip                    # Run tests including WIP tagged tests
-mix test --trace                         # Run tests with detailed output
+The codebase follows a modular structure with these key components:
+
+- **DNS.Message**: Core DNS message structure with Header, Question, Record sections
+- **DNS.Zone**: Zone management for authoritative, stub, forward, and cache zones
+- **DNS.ResourceRecordType**: DNS record type definitions (A, AAAA, CNAME, MX, etc.)
+- **DNS.Class**: DNS class definitions (IN, CH, HS, etc.)
+- **DNS.Parameter**: Protocol serialization/deserialization interface
+
+### Key Module Structure
+
 ```
-
-### Code Quality & Analysis
-```bash
-mix format                               # Format code with Elixir formatter
-mix format --check-formatted            # Check if code is formatted
-mix credo                               # Run static code analysis
-mix dialyzer                            # Run type checking and static analysis
+DNS/
+├── Message/           # DNS message format implementation
+│   ├── Header.ex      # Message header (ID, flags, counts)
+│   ├── Question.ex    # Question section
+│   ├── Record.ex      # Resource record format
+│   ├── Record/Data/   # Specific record types (A, AAAA, CNAME, etc.)
+│   └── EDNS0.ex       # Extension mechanisms for DNS
+├── Zone/             # DNS zone management
+│   ├── Name.ex       # Zone name handling
+│   ├── RootHint.ex   # Root server hints
+│   └── RRSet.ex      # Resource record sets
+└── Class.ex          # DNS class definitions
 ```
-
-### Build & Dependencies
-```bash
-mix deps.get                            # Install/update dependencies
-mix compile                             # Compile the project
-mix clean                               # Clean compiled files
-mix compile --warnings-as-errors        # Treat warnings as errors (CI requirement)
-```
-
-### Documentation
-```bash
-mix docs                                # Generate documentation
-mix help                                # List available tasks
-```
-
-### Publishing & Release
-```bash
-mix publish                             # Format and publish to hex.pm (custom alias)
-mix hex.publish --yes                   # Direct publish to hex.pm
-```
-
-### Manual Testing Scripts
-```bash
-elixir test_all_string_chars.exs        # Test all record type String.Chars implementations
-elixir test_zone_system.exs            # Test zone management functionality
-```
-
-## Architecture Overview
-
-The codebase follows a modular structure with clear separation of concerns:
 
 ### Core Components
 
@@ -118,6 +97,58 @@ Record length fields (rdlength) require validation to prevent memory exhaustion 
 
 **DNSSEC Implementation**
 Current DNSSEC support uses placeholder cryptographic functions. Production use requires proper cryptographic implementations.
+
+## Development Commands
+
+### Testing
+```bash
+mix test                                  # Run all tests
+mix test test/dns/message_test.exs       # Run specific test file
+mix test --include wip                    # Run tests including WIP tagged tests
+mix test --trace                         # Run tests with detailed output
+```
+
+### Code Quality & Analysis
+```bash
+mix format                               # Format code with Elixir formatter
+mix format --check-formatted            # Check if code is formatted
+mix credo                               # Run static code analysis
+mix dialyzer                            # Run type checking and static analysis
+```
+
+### Build & Dependencies
+```bash
+mix deps.get                            # Install/update dependencies
+mix compile                             # Compile the project
+mix clean                               # Clean compiled files
+mix compile --warnings-as-errors        # Treat warnings as errors (CI requirement)
+```
+
+### Documentation
+```bash
+mix docs                                # Generate documentation
+mix help                                # List available tasks
+```
+
+### Publishing & Release
+```bash
+mix publish                             # Format and publish to hex.pm (custom alias)
+mix hex.publish --yes                   # Direct publish to hex.pm
+```
+
+### Manual Testing Scripts
+```bash
+elixir test_all_string_chars.exs        # Test all record type String.Chars implementations
+elixir test_zone_system.exs            # Test zone management functionality
+```
+
+## Key Patterns
+
+- **Protocol Implementation**: Uses `DNS.Parameter` protocol for binary serialization
+- **String Representation**: Uses `String.Chars` protocol for human-readable output
+- **Data Structures**: Immutable structs for all DNS entities
+- **Error Handling**: Returns structured data with validation
+- **Zone Types**: Supports :authoritative, :stub, :forward, :cache zone types
 
 ## File Organization
 

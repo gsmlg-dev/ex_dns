@@ -49,14 +49,20 @@ defmodule DNS.Zone.ManagerTest do
       content = """
       $ORIGIN example.com.
       $TTL 3600
-      @       IN  SOA ns1.example.com. admin.example.com. 2024010101 3600 1800 604800 86400
+      @       IN  SOA ns1.example.com. admin.example.com. (
+                  2024010101  ; serial
+                  3600        ; refresh
+                  1800        ; retry
+                  604800      ; expire
+                  86400       ; minimum
+              )
       @       IN  NS  ns1.example.com.
       """
 
       assert {:ok, zone} = Manager.load_zone_from_string("example.com", content)
       assert zone.name.value == "example.com"
       assert zone.type == :authoritative
-      assert zone.options[:soa] != nil
+      assert zone.soa != nil
     end
   end
 

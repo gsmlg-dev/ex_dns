@@ -9,7 +9,7 @@ defmodule DNS.Zone.Store do
   alias DNS.Zone.Name
 
   @table_name :dns_zones
-  @ets_options [:named_table, :protected, :set, read_concurrency: true]
+  @ets_options [:named_table, :public, :set, read_concurrency: true]
 
   @doc """
   Initialize the zone store.
@@ -95,17 +95,16 @@ defmodule DNS.Zone.Store do
   end
 
   @doc """
-  Get zones by type using optimized ETS match patterns.
+  Get zones by type.
   """
   @spec get_zones_by_type(Zone.zone_type()) :: list(Zone.t())
   def get_zones_by_type(type) do
     ensure_initialized()
 
-    # Filter zones by type using efficient enumeration
     @table_name
     |> :ets.tab2list()
-    |> Enum.filter(fn {_key, zone} -> zone.type == type end)
     |> Enum.map(fn {_key, zone} -> zone end)
+    |> Enum.filter(&(&1.type == type))
   end
 
   @doc """
