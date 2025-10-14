@@ -97,10 +97,13 @@ defmodule DNS.Message.Record do
     with domain <- Domain.from_iodata(buffer, message),
          <<_::binary-size(domain.size), type::16, class::16, ttl::32, rdlength::16, rest::binary>> <-
            buffer do
-
       # Validate rdlength to prevent memory exhaustion attacks
       if rdlength > @max_rdlength do
-        Error.log_detailed_error(:security_error, __MODULE__, %{rdlength: rdlength, max_rdlength: @max_rdlength})
+        Error.log_detailed_error(:security_error, __MODULE__, %{
+          rdlength: rdlength,
+          max_rdlength: @max_rdlength
+        })
+
         throw(Error.new(:security_error, __MODULE__, :rdlength_too_large, %{rdlength: rdlength}))
       end
 
@@ -118,7 +121,11 @@ defmodule DNS.Message.Record do
           }
 
         _ ->
-          Error.log_detailed_error(:format_error, __MODULE__, %{rdlength: rdlength, rest_size: byte_size(rest)})
+          Error.log_detailed_error(:format_error, __MODULE__, %{
+            rdlength: rdlength,
+            rest_size: byte_size(rest)
+          })
+
           throw(Error.new(:format_error, __MODULE__, :insufficient_rdata))
       end
     else

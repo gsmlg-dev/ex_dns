@@ -28,9 +28,10 @@ defmodule DNS.Zone.StorePerformanceTest do
       end)
 
       # Performance test: measure time for filtered queries
-      {time, result} = :timer.tc(fn ->
-        Store.get_zones_by_type(:authoritative)
-      end)
+      {time, result} =
+        :timer.tc(fn ->
+          Store.get_zones_by_type(:authoritative)
+        end)
 
       # Should return all zones of the specified type
       assert length(result) == zones_per_type
@@ -60,15 +61,17 @@ defmodule DNS.Zone.StorePerformanceTest do
       end)
 
       # Test optimized query
-      {optimized_time, optimized_result} = :timer.tc(fn ->
-        Store.get_zones_by_type(:authoritative)
-      end)
+      {optimized_time, optimized_result} =
+        :timer.tc(fn ->
+          Store.get_zones_by_type(:authoritative)
+        end)
 
       # Test naive enumeration (simulating old approach)
-      {naive_time, naive_result} = :timer.tc(fn ->
-        Store.list_zones()
-        |> Enum.filter(&(&1.type == :authoritative))
-      end)
+      {naive_time, naive_result} =
+        :timer.tc(fn ->
+          Store.list_zones()
+          |> Enum.filter(&(&1.type == :authoritative))
+        end)
 
       # Results should be the same
       assert length(optimized_result) == length(naive_result)
@@ -97,9 +100,10 @@ defmodule DNS.Zone.StorePerformanceTest do
         end)
 
         # Measure query time
-        {time, zones} = :timer.tc(fn ->
-          Store.get_zones_by_type(target_type)
-        end)
+        {time, zones} =
+          :timer.tc(fn ->
+            Store.get_zones_by_type(target_type)
+          end)
 
         # Verify results
         authoritative_zones = Enum.filter(zones, &(&1.type == target_type))
@@ -125,17 +129,19 @@ defmodule DNS.Zone.StorePerformanceTest do
       end)
 
       # Test concurrent reads
-      read_tasks = for _i <- 1..10 do
-        Task.async(fn ->
-          Enum.each(1..10, fn _j ->
-            Store.get_zones_by_type(:authoritative)
+      read_tasks =
+        for _i <- 1..10 do
+          Task.async(fn ->
+            Enum.each(1..10, fn _j ->
+              Store.get_zones_by_type(:authoritative)
+            end)
           end)
-        end)
-      end
+        end
 
-      {time, _results} = :timer.tc(fn ->
-        Task.await_many(read_tasks, 5000)
-      end)
+      {time, _results} =
+        :timer.tc(fn ->
+          Task.await_many(read_tasks, 5000)
+        end)
 
       # Concurrent operations should complete quickly
       assert time < 50000, "Concurrent reads took too long: #{time} microseconds"
@@ -154,23 +160,26 @@ defmodule DNS.Zone.StorePerformanceTest do
       end)
 
       # Test individual zone lookups
-      {lookup_time, _} = :timer.tc(fn ->
-        Enum.each(1..10, fn i ->
-          Store.get_zone("pattern#{i}.com")
+      {lookup_time, _} =
+        :timer.tc(fn ->
+          Enum.each(1..10, fn i ->
+            Store.get_zone("pattern#{i}.com")
+          end)
         end)
-      end)
 
       # Test type filtering
-      {filter_time, _} = :timer.tc(fn ->
-        Enum.each([:authoritative, :stub, :forward, :cache], fn type ->
-          Store.get_zones_by_type(type)
+      {filter_time, _} =
+        :timer.tc(fn ->
+          Enum.each([:authoritative, :stub, :forward, :cache], fn type ->
+            Store.get_zones_by_type(type)
+          end)
         end)
-      end)
 
       # Test full enumeration
-      {enum_time, zones} = :timer.tc(fn ->
-        Store.list_zones()
-      end)
+      {enum_time, zones} =
+        :timer.tc(fn ->
+          Store.list_zones()
+        end)
 
       assert length(zones) == zone_count
 
@@ -191,6 +200,7 @@ defmodule DNS.Zone.StorePerformanceTest do
 
       # Create many zones
       zone_count = 500
+
       Enum.each(1..zone_count, fn i ->
         zone_name = "memory#{i}.com"
         zone = Zone.new(zone_name, :authoritative)

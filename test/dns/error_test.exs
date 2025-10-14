@@ -14,14 +14,16 @@ defmodule DNS.ErrorTest do
       context = %{rdlength: 8193}
       error = Error.new(:security_error, DNS.Message.Record, :rdlength_too_large, context)
 
-      assert {"DNS.Message.Record Security Error", %{internal_reason: :rdlength_too_large, rdlength: 8193}} = error
+      assert {"DNS.Message.Record Security Error",
+              %{internal_reason: :rdlength_too_large, rdlength: 8193}} = error
     end
 
     test "creates compression error for Domain module" do
       context = %{depth: 6, max_depth: 5}
       error = Error.new(:compression_error, DNS.Message.Domain, :depth_exceeded, context)
 
-      assert {"DNS.Message.Domain Compression Error", %{internal_reason: :depth_exceeded, depth: 6, max_depth: 5}} = error
+      assert {"DNS.Message.Domain Compression Error",
+              %{internal_reason: :depth_exceeded, depth: 6, max_depth: 5}} = error
     end
 
     test "handles unknown module gracefully" do
@@ -44,7 +46,10 @@ defmodule DNS.ErrorTest do
       Application.put_env(:dns, :detailed_errors, true)
 
       # This should not raise an exception
-      assert :ok = Error.log_detailed_error(:format_error, DNS.Message.Domain, :test_reason, %{context: "test"})
+      assert :ok =
+               Error.log_detailed_error(:format_error, DNS.Message.Domain, :test_reason, %{
+                 context: "test"
+               })
     end
 
     test "does not log detailed errors when disabled" do
@@ -63,7 +68,13 @@ defmodule DNS.ErrorTest do
         visited_positions: [0, 256, 512]
       }
 
-      assert :ok = Error.log_detailed_error(:compression_error, DNS.Message.Domain, :loop_detected, context)
+      assert :ok =
+               Error.log_detailed_error(
+                 :compression_error,
+                 DNS.Message.Domain,
+                 :loop_detected,
+                 context
+               )
     end
   end
 

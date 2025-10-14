@@ -9,7 +9,8 @@ defmodule DNS.SecurityTest do
   describe "DNS Compression Security" do
     test "prevents compression loop attacks" do
       # Create malicious DNS message with circular compression pointers
-      malicious_data = <<0xC0, 0x00, 0xC0, 0x02>> # Circular reference
+      # Circular reference
+      malicious_data = <<0xC0, 0x00, 0xC0, 0x02>>
 
       try do
         Domain.from_iodata(malicious_data, malicious_data)
@@ -73,7 +74,8 @@ defmodule DNS.SecurityTest do
 
     test "handles records with insufficient data" do
       # Create a record that claims more data than is available
-      malicious_record = <<0x00>> <> <<1::16>> <> <<1::16>> <> <<0::32>> <> <<100::16>> <> <<0, 1, 2>>
+      malicious_record =
+        <<0x00>> <> <<1::16>> <> <<1::16>> <> <<0::32>> <> <<100::16>> <> <<0, 1, 2>>
 
       try do
         Record.from_iodata(malicious_record)
@@ -98,7 +100,7 @@ defmodule DNS.SecurityTest do
 
       for path <- malicious_paths do
         assert {:error, "Path traversal detected - access denied"} =
-          DNS.Zone.FileParser.parse_file(path)
+                 DNS.Zone.FileParser.parse_file(path)
       end
     end
 
@@ -109,7 +111,7 @@ defmodule DNS.SecurityTest do
 
       # This should fail due to file not existing, not path traversal
       assert {:error, "Failed to read file:" <> _} =
-        DNS.Zone.FileParser.parse_file("/tmp/test_zones/zone1.db")
+               DNS.Zone.FileParser.parse_file("/tmp/test_zones/zone1.db")
     end
   end
 
@@ -169,10 +171,11 @@ defmodule DNS.SecurityTest do
     # Build a chain of compression pointers
     base_message = <<0x03, "com", 0x00>>
 
-    chain = Enum.reduce(1..depth, {base_message, byte_size(base_message)}, fn _i, {msg, pos} ->
-      pointer = <<0xC0, pos::16>>
-      {msg <> pointer, pos - 2}
-    end)
+    chain =
+      Enum.reduce(1..depth, {base_message, byte_size(base_message)}, fn _i, {msg, pos} ->
+        pointer = <<0xC0, pos::16>>
+        {msg <> pointer, pos - 2}
+      end)
 
     chain
   end
@@ -180,9 +183,12 @@ defmodule DNS.SecurityTest do
   defp build_record_with_rdlength(rdlength, rdata) do
     # Build a DNS record with specified rdlength and rdata
     # Format: domain (1 byte) + type (2) + class (2) + ttl (4) + rdlength (2) + rdata (rdlength)
-    domain = <<0x00>> # Root domain
-    type = <<1::16>>   # A record
-    class = <<1::16>>  # IN class
+    # Root domain
+    domain = <<0x00>>
+    # A record
+    type = <<1::16>>
+    # IN class
+    class = <<1::16>>
     ttl = <<0::32>>
 
     domain <> type <> class <> ttl <> <<rdlength::16>> <> rdata

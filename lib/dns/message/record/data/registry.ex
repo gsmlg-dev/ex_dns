@@ -53,6 +53,7 @@ defmodule DNS.Message.Record.Data.Registry do
         # Initialize the registry table directly if GenServer isn't running
         :ets.new(@type_table, [:set, :protected, :named_table, read_concurrency: true])
         init_builtin_types()
+
       _ ->
         :ok
     end
@@ -114,6 +115,7 @@ defmodule DNS.Message.Record.Data.Registry do
       case :ets.whereis(@type_table) do
         :undefined ->
           :ok
+
         _ ->
           :ets.insert(@type_table, {type, module})
       end
@@ -142,6 +144,7 @@ defmodule DNS.Message.Record.Data.Registry do
       :ok ->
         :ets.insert(@type_table, {type, module})
         {:reply, :ok, state}
+
       {:error, reason} ->
         {:reply, {:error, reason}, state}
     end

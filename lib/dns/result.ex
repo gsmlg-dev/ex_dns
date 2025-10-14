@@ -53,8 +53,10 @@ defmodule DNS.Result do
         case reason do
           {error_type, module, details} when is_atom(error_type) and is_atom(module) ->
             {:error, DNS.Error.new(error_type, module, details)}
+
           {message, _details} when is_binary(message) ->
             {:error, message}
+
           _other ->
             {:error, "DNS operation failed"}
         end

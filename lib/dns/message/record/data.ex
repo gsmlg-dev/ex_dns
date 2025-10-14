@@ -14,6 +14,7 @@ defmodule DNS.Message.Record.Data do
     case Registry.lookup(type) do
       {:ok, module} ->
         module.new(rdata)
+
       {:error, :not_found} ->
         # Fallback to generic data storage for unknown types
         %__MODULE__{type: rtype, rdlength: byte_size(rdata), raw: rdata}
@@ -24,6 +25,7 @@ defmodule DNS.Message.Record.Data do
     case Registry.lookup(type) do
       {:ok, module} ->
         module.from_iodata(raw, message)
+
       {:error, :not_found} ->
         # Fallback to generic data storage for unknown types
         %__MODULE__{type: DNS.ResourceRecordType.new(type), rdlength: byte_size(raw), raw: raw}

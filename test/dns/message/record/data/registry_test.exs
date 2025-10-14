@@ -7,15 +7,22 @@ defmodule DNS.Message.Record.Data.RegistryTest do
   describe "registry functionality" do
     test "initializes with built-in record types" do
       # Ensure the registry is initialized
-      Registry.lookup(1)  # A record
+      # A record
+      Registry.lookup(1)
 
       # Check that built-in types are registered
-      assert Registry.registered?(1)   # A
-      assert Registry.registered?(2)   # NS
-      assert Registry.registered?(5)   # CNAME
-      assert Registry.registered?(6)   # SOA
-      assert Registry.registered?(16)  # TXT
-      assert Registry.registered?(28)  # AAAA
+      # A
+      assert Registry.registered?(1)
+      # NS
+      assert Registry.registered?(2)
+      # CNAME
+      assert Registry.registered?(5)
+      # SOA
+      assert Registry.registered?(6)
+      # TXT
+      assert Registry.registered?(16)
+      # AAAA
+      assert Registry.registered?(28)
     end
 
     test "lookup returns correct module for known types" do
@@ -40,17 +47,22 @@ defmodule DNS.Message.Record.Data.RegistryTest do
 
       # Check that some expected types are present
       type_numbers = Enum.map(types, fn {type, _module} -> type end)
-      assert 1 in type_numbers  # A
-      assert 2 in type_numbers  # NS
-      assert 28 in type_numbers # AAAA
+      # A
+      assert 1 in type_numbers
+      # NS
+      assert 2 in type_numbers
+      # AAAA
+      assert 28 in type_numbers
     end
 
     test "registered? function works correctly" do
       # Ensure registry is initialized first
       Registry.lookup(1)
 
-      assert Registry.registered?(1)   # A
-      assert Registry.registered?(28)  # AAAA
+      # A
+      assert Registry.registered?(1)
+      # AAAA
+      assert Registry.registered?(28)
       refute Registry.registered?(9999)
       refute Registry.registered?(0)
     end
@@ -78,7 +90,8 @@ defmodule DNS.Message.Record.Data.RegistryTest do
 
   describe "integration with record data module" do
     test "record data module uses registry for known types" do
-      rtype = ResourceRecordType.new(1)  # A record
+      # A record
+      rtype = ResourceRecordType.new(1)
       data = DNS.Message.Record.Data.new(rtype, {192, 168, 1, 1})
 
       # Should return an A record struct, not generic data
@@ -86,7 +99,8 @@ defmodule DNS.Message.Record.Data.RegistryTest do
     end
 
     test "record data module falls back to generic for unknown types" do
-      rtype = ResourceRecordType.new(9999)  # Unknown type
+      # Unknown type
+      rtype = ResourceRecordType.new(9999)
       data = DNS.Message.Record.Data.new(rtype, "test_data")
 
       # Should return generic data struct
@@ -95,14 +109,16 @@ defmodule DNS.Message.Record.Data.RegistryTest do
 
     test "from_iodata uses registry for known types" do
       rdata = <<192, 168, 1, 1>>
-      data = DNS.Message.Record.Data.from_iodata(1, rdata)  # A record
+      # A record
+      data = DNS.Message.Record.Data.from_iodata(1, rdata)
 
       assert %DNS.Message.Record.Data.A{} = data
     end
 
     test "from_iodata falls back to generic for unknown types" do
       rdata = "test_data"
-      data = DNS.Message.Record.Data.from_iodata(9999, rdata)  # Unknown type
+      # Unknown type
+      data = DNS.Message.Record.Data.from_iodata(9999, rdata)
 
       assert %DNS.Message.Record.Data{raw: "test_data"} = data
     end
@@ -118,11 +134,12 @@ defmodule DNS.Message.Record.Data.RegistryTest do
 
     test "handles concurrent lookups safely" do
       # Spawn multiple processes doing lookups simultaneously
-      tasks = for _i <- 1..10 do
-        Task.async(fn ->
-          Registry.lookup(1)
-        end)
-      end
+      tasks =
+        for _i <- 1..10 do
+          Task.async(fn ->
+            Registry.lookup(1)
+          end)
+        end
 
       results = Task.await_many(tasks, 1000)
       assert length(results) == 10

@@ -46,10 +46,16 @@ defmodule DNS.Message.Domain do
     new(domain, len)
   end
 
-  defp parse_domain_from_message(<<size::8, _::binary>>, _, _depth, _visited) when size == 0, do: {1, "."}
+  defp parse_domain_from_message(<<size::8, _::binary>>, _, _depth, _visited) when size == 0,
+    do: {1, "."}
 
-  defp parse_domain_from_message(_buffer, _message, depth, _visited) when depth > @max_compression_depth do
-    Error.log_detailed_error(:compression_error, __MODULE__, %{depth: depth, max_depth: @max_compression_depth})
+  defp parse_domain_from_message(_buffer, _message, depth, _visited)
+       when depth > @max_compression_depth do
+    Error.log_detailed_error(:compression_error, __MODULE__, %{
+      depth: depth,
+      max_depth: @max_compression_depth
+    })
+
     throw(Error.new(:compression_error, __MODULE__, :depth_exceeded, %{depth: depth}))
   end
 
@@ -59,7 +65,11 @@ defmodule DNS.Message.Domain do
     _current_pos = byte_size(message) - byte_size(rest) - 2
 
     if MapSet.member?(visited, pos) do
-      Error.log_detailed_error(:compression_error, __MODULE__, %{loop_position: pos, visited_positions: MapSet.to_list(visited)})
+      Error.log_detailed_error(:compression_error, __MODULE__, %{
+        loop_position: pos,
+        visited_positions: MapSet.to_list(visited)
+      })
+
       throw(Error.new(:compression_error, __MODULE__, :loop_detected, %{position: pos}))
     end
 
@@ -67,7 +77,14 @@ defmodule DNS.Message.Domain do
 
     case message do
       <<_::binary-size(pos), next::8, next_buffer::binary>> when next > 0 and next < 64 ->
-        {_, name} = parse_domain_from_message(<<next::8, next_buffer::binary>>, message, depth + 1, updated_visited)
+        {_, name} =
+          parse_domain_from_message(
+            <<next::8, next_buffer::binary>>,
+            message,
+            depth + 1,
+            updated_visited
+          )
+
         {2, name}
 
       <<_::binary-size(pos), next_pointer::2, next_pos::14, next_buffer::binary>>
@@ -96,7 +113,12 @@ defmodule DNS.Message.Domain do
 
       <<part::binary-size(size), next::8, next_pos::8, last_buffer::binary>> when next == 0xC0 ->
         {_, compressed_name} =
-          parse_domain_from_message(<<next::8, next_pos::8, last_buffer::binary>>, message, depth + 1, visited)
+          parse_domain_from_message(
+            <<next::8, next_pos::8, last_buffer::binary>>,
+            message,
+            depth + 1,
+            visited
+          )
 
         {1 + size + 2, part <> "." <> compressed_name}
 

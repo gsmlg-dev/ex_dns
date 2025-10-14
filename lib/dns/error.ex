@@ -6,7 +6,8 @@ defmodule DNS.Error do
   buffer contents or sensitive information that could be used by attackers.
   """
 
-  @type error_type :: :format_error | :parse_error | :validation_error | :compression_error | :security_error
+  @type error_type ::
+          :format_error | :parse_error | :validation_error | :compression_error | :security_error
 
   @doc """
   Create a standardized error message that doesn't expose sensitive information.
@@ -73,8 +74,12 @@ defmodule DNS.Error do
   def log_detailed_error(type, module, reason, context \\ %{}) do
     if Application.get_env(:dns, :detailed_errors, false) do
       require Logger
-      Logger.error("DNS Detailed Error: #{inspect(type)} in #{module}: #{inspect(reason)} context: #{inspect(context)}")
+
+      Logger.error(
+        "DNS Detailed Error: #{inspect(type)} in #{module}: #{inspect(reason)} context: #{inspect(context)}"
+      )
     end
+
     :ok
   end
 end
