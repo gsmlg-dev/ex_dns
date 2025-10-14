@@ -52,11 +52,14 @@ defmodule DNS.Message.Record do
                     resource.  The format of this information varies
                     according to the TYPE and CLASS of the resource record.
   """
+
+  @max_rdlength DNS.Constants.max_rdlength()
   alias DNS.Class
   alias DNS.Message.Domain
   alias DNS.Message.Record
   alias DNS.ResourceRecordType, as: RRType
   alias DNS.Message.Record.Data, as: RData
+  alias DNS.Error
 
   @type t :: %__MODULE__{
           name: Domain.t(),
@@ -93,21 +96,35 @@ defmodule DNS.Message.Record do
   def from_iodata(buffer, message \\ <<>>) do
     with domain <- Domain.from_iodata(buffer, message),
          <<_::binary-size(domain.size), type::16, class::16, ttl::32, rdlength::16, rest::binary>> <-
-           buffer,
-         <<rdata::binary-size(rdlength), _::binary>> <- rest do
-      rtype = RRType.new(<<type::16>>)
+           buffer do
 
-      %Record{
-        name: domain,
-        type: rtype,
-        class: Class.new(class),
-        ttl: ttl,
-        rdlength: rdlength,
-        data: RData.from_iodata(type, rdata, message)
-      }
+      # Validate rdlength to prevent memory exhaustion attacks
+      if rdlength > @max_rdlength do
+        Error.log_detailed_error(:security_error, __MODULE__, %{rdlength: rdlength, max_rdlength: @max_rdlength})
+        throw(Error.new(:security_error, __MODULE__, :rdlength_too_large, %{rdlength: rdlength}))
+      end
+
+      case rest do
+        <<rdata::binary-size(rdlength), _::binary>> ->
+          rtype = RRType.new(<<type::16>>)
+
+          %Record{
+            name: domain,
+            type: rtype,
+            class: Class.new(class),
+            ttl: ttl,
+            rdlength: rdlength,
+            data: RData.from_iodata(type, rdata, message)
+          }
+
+        _ ->
+          Error.log_detailed_error(:format_error, __MODULE__, %{rdlength: rdlength, rest_size: byte_size(rest)})
+          throw(Error.new(:format_error, __MODULE__, :insufficient_rdata))
+      end
     else
       error ->
-        throw({"DNS.Message.Record format error", error, buffer, message})
+        Error.log_detailed_error(:format_error, __MODULE__, %{parse_error: error})
+        throw(Error.new(:format_error, __MODULE__, :parse_failed))
     end
   end
 

@@ -90,13 +90,20 @@ defmodule DNS.Zone.FileParser do
   end
 
   @doc """
-  Parse a zone file from a file path with enhanced error handling.
+  Parse a zone file from a file path with enhanced error handling and path validation.
   """
   @spec parse_file(String.t()) :: {:ok, zone_data()} | {:error, String.t()}
   def parse_file(file_path) do
-    case File.read(file_path) do
-      {:ok, content} -> parse_with_context(content, %{file: file_path, line: 0})
-      {:error, reason} -> {:error, "Failed to read file: #{reason}"}
+    normalized_path = Path.expand(file_path)
+    allowed_base = Path.expand(Application.get_env(:dns, :zone_directory, "/var/lib/dns/zones"))
+
+    if String.starts_with?(normalized_path, allowed_base) do
+      case File.read(normalized_path) do
+        {:ok, content} -> parse_with_context(content, %{file: normalized_path, line: 0})
+        {:error, reason} -> {:error, "Failed to read file: #{reason}"}
+      end
+    else
+      {:error, "Path traversal detected - access denied"}
     end
   end
 
