@@ -1,0 +1,7 @@
+/home/gao/Workspace/gsmlg-dev/ex_dns/.devenv/flake.json
+/home/gao/Workspace/gsmlg-dev/ex_dns/.devenv.flake.nix
+/home/gao/Workspace/gsmlg-dev/ex_dns/.env
+/home/gao/Workspace/gsmlg-dev/ex_dns/devenv.local.nix
+/home/gao/Workspace/gsmlg-dev/ex_dns/devenv.lock
+/home/gao/Workspace/gsmlg-dev/ex_dns/devenv.nix
+/home/gao/Workspace/gsmlg-dev/ex_dns/devenv.yaml
