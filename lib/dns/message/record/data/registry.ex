@@ -48,26 +48,38 @@ defmodule DNS.Message.Record.Data.Registry do
   end
 
   defp ensure_registry_initialized do
+    # Use a loop with retry to handle race conditions in concurrent environments
+    case initialize_table_with_retry(0) do
+      :ok ->
+        :ok
+
+      {:error, :max_retries} ->
+        raise "Failed to initialize registry table after multiple attempts"
+    end
+  end
+
+  defp initialize_table_with_retry(attempt) when attempt < 3 do
     case :ets.whereis(@type_table) do
       :undefined ->
-        # Simple atomic check with a small retry mechanism
         try do
-          :ets.new(@type_table, [:set, :protected, :named_table, read_concurrency: true])
+          :ets.new(@type_table, [:set, :public, :named_table, read_concurrency: true])
           init_builtin_types()
+          :ok
         rescue
           ArgumentError ->
-            # Table was created by another process, wait briefly and ensure builtins
+            # Table was created by another process, wait briefly and retry
             Process.sleep(1)
-
-            if :ets.whereis(@type_table) != :undefined do
-              init_builtin_types()
-            end
+            initialize_table_with_retry(attempt + 1)
         end
 
-      _ ->
+      table when is_reference(table) or is_integer(table) ->
+        # Table exists, ensure builtins are loaded (idempotent operation)
+        init_builtin_types()
         :ok
     end
   end
+
+  defp initialize_table_with_retry(_attempt), do: {:error, :max_retries}
 
   @doc """
   Get all registered record types.
@@ -120,14 +132,14 @@ defmodule DNS.Message.Record.Data.Registry do
       {64, DNS.Message.Record.Data.SVCB}
     ]
 
-    # Insert directly into ETS table without GenServer call
+    # Insert into ETS table with error handling for concurrent access
     Enum.each(builtins, fn {type, module} ->
-      case :ets.whereis(@type_table) do
-        :undefined ->
+      try do
+        :ets.insert(@type_table, {type, module})
+      rescue
+        ArgumentError ->
+          # Table doesn't exist or was deleted, that's okay in concurrent scenarios
           :ok
-
-        _ ->
-          :ets.insert(@type_table, {type, module})
       end
     end)
 
@@ -139,7 +151,7 @@ defmodule DNS.Message.Record.Data.Registry do
   @impl true
   def init(_opts) do
     # Create ETS table for type registry
-    @type_table = :ets.new(@type_table, [:set, :protected, :named_table, read_concurrency: true])
+    @type_table = :ets.new(@type_table, [:set, :public, :named_table, read_concurrency: true])
 
     # Initialize built-in record types
     init_builtin_types()

@@ -125,15 +125,8 @@ defmodule DNS.Message.Record.Data.RegistryTest do
   end
 
   describe "registry behavior" do
-    setup do
-      # Clean up any existing ETS table to ensure fresh state
-      case :ets.whereis(:dns_record_types) do
-        :undefined -> :ok
-        _table -> :ets.delete(:dns_record_types)
-      end
-
-      :ok
-    end
+    # No setup cleanup - let the ETS table persist for the duration of the test suite
+    # This prevents race conditions between test cleanup and concurrent access
 
     test "maintains consistency across multiple lookups" do
       # Multiple lookups should return the same result

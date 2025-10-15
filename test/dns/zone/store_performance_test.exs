@@ -90,10 +90,14 @@ defmodule DNS.Zone.StorePerformanceTest do
         # Clean up
         Store.clear()
 
-        # Create zones
+        # Create zones - ensure at least one authoritative zone
         Enum.each(1..count, fn i ->
-          # Mix of zone types
-          type = Enum.random([:authoritative, :stub, :forward, :cache])
+          # Mix of zone types, but ensure first one is authoritative
+          type =
+            if i == 1,
+              do: :authoritative,
+              else: Enum.random([:authoritative, :stub, :forward, :cache])
+
           zone_name = "scale#{i}.com"
           zone = Zone.new(zone_name, type)
           Store.put_zone(zone)
