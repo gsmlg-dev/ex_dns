@@ -50,9 +50,18 @@ defmodule DNS.Message.Record.Data.Registry do
   defp ensure_registry_initialized do
     case :ets.whereis(@type_table) do
       :undefined ->
-        # Initialize the registry table directly if GenServer isn't running
-        :ets.new(@type_table, [:set, :protected, :named_table, read_concurrency: true])
-        init_builtin_types()
+        # Simple atomic check with a small retry mechanism
+        try do
+          :ets.new(@type_table, [:set, :protected, :named_table, read_concurrency: true])
+          init_builtin_types()
+        rescue
+          ArgumentError ->
+            # Table was created by another process, wait briefly and ensure builtins
+            Process.sleep(1)
+            if :ets.whereis(@type_table) != :undefined do
+              init_builtin_types()
+            end
+        end
 
       _ ->
         :ok
