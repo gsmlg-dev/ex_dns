@@ -41,9 +41,19 @@ defmodule DNS.Message.Record.Data.Registry do
     # Ensure the registry is initialized
     ensure_registry_initialized()
 
-    case :ets.lookup(@type_table, type) do
-      [{^type, module}] -> {:ok, module}
-      [] -> {:error, :not_found}
+    try do
+      case :ets.lookup(@type_table, type) do
+        [{^type, module}] -> {:ok, module}
+        [] -> {:error, :not_found}
+      end
+    rescue
+      ArgumentError ->
+        # Table doesn't exist, try to initialize and retry once
+        ensure_registry_initialized()
+        case :ets.lookup(@type_table, type) do
+          [{^type, module}] -> {:ok, module}
+          [] -> {:error, :not_found}
+        end
     end
   end
 
