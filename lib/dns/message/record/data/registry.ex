@@ -58,6 +58,7 @@ defmodule DNS.Message.Record.Data.Registry do
           ArgumentError ->
             # Table was created by another process, wait briefly and ensure builtins
             Process.sleep(1)
+
             if :ets.whereis(@type_table) != :undefined do
               init_builtin_types()
             end

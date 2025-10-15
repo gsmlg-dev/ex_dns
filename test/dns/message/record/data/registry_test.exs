@@ -131,6 +131,7 @@ defmodule DNS.Message.Record.Data.RegistryTest do
         :undefined -> :ok
         _table -> :ets.delete(:dns_record_types)
       end
+
       :ok
     end
 
