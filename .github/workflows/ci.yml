@@ -21,7 +21,8 @@ jobs:
           - os: ubuntu-latest
             elixir: 1.18
             otp: 27
-          - elixir: 1.18
+          - os: ubuntu-latest
+            elixir: 1.18
             otp: 28
 
     runs-on: ${{ matrix.os }}
