@@ -97,5 +97,4 @@ defmodule DNS.Zone.Loader do
   end
 
   ## Private functions
-
 end

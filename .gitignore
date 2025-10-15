@@ -29,3 +29,7 @@ ex_dns-*.tar
 /tmp/
 /debug_*
 /test_*
+
+# Development environment files
+.devenv/
+.devenv.*
